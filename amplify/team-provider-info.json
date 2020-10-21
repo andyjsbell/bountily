@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-bountily-dev-172309-authRole",
+      "UnauthRoleArn": "arn:aws:iam::804068722217:role/amplify-bountily-dev-172309-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::804068722217:role/amplify-bountily-dev-172309-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-bountily-dev-172309-deployment",
+      "UnauthRoleName": "amplify-bountily-dev-172309-unauthRole",
+      "StackName": "amplify-bountily-dev-172309",
+      "StackId": "arn:aws:cloudformation:eu-west-1:804068722217:stack/amplify-bountily-dev-172309/54dfe2f0-13b1-11eb-9ba1-02dbc193ed28",
+      "AmplifyAppId": "d2tymsn30dr7rz"
+    }
+  }
+}
