@@ -1,0 +1,27 @@
+scalar Date
+enum Outcome {
+  DRAFT 
+  OPEN
+  CLOSED
+  CANCELLED
+}
+
+type Bounty @model {
+  id: ID!
+  title: String!
+  deadline: Date!
+  amount: Number!
+  rules: String!
+  owner: ID!
+  outcome: Outcome!
+  submissions: [Submission] @connection(keyName: "bySubmission", fields: ["id"])
+}
+
+type Submission @model @key(name: "bySubmission", fields:["bountyID"]){
+  bountyID: ID!
+  bounty: Bounty @connection(fields: ["bountyID"])
+  date: Date!
+  owner: ID!
+  answer: Text!
+  outcome: Outcome!
+}
