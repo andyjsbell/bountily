@@ -69,6 +69,22 @@ const Bountys = () => {
 
   }
 
+  const addSubmission = async (bountyID) => {
+    console.log("addSubmission called")
+    try {
+      const submission = {
+        bountyID,
+        date: currentDateTimeISO(),
+        owner: "Andy",
+        answer: "",
+        outcome: Outcome.Draft,
+      }
+      await API.graphql(graphqlOperation(createSubmission, {input: submission}))
+    } catch (err) {
+      console.log("error creating submission:", err)
+    }
+  }
+
   return (
     <div>
       <button onClick={() => addBounty()}>Create Bounty</button>
@@ -80,6 +96,7 @@ const Bountys = () => {
           <th>Bounty</th>
           <th>Hunters</th>
           <th>Owner</th><th>Status</th>
+          <th></th>
         </tr>
         {bountys.map((bounty =>
           <tr key={bounty.ID}>
@@ -89,6 +106,43 @@ const Bountys = () => {
             <th>{bounty.amount}</th>
             <th>{bounty.submissions?.length}</th>
             <th>{bounty.owner}</th><th>{bounty.outcome}</th>
+            <th><button onClick={() => addSubmission(bounty.ID)}>Add submission</button></th>
+          </tr>
+        ))}
+      </table>
+    </div>
+  )
+}
+
+const Submissions = () => {
+  const [submissions, setSubmissions] = useState([])
+
+  useEffect(()=> {
+    fetchSubmissions()
+  }, [])
+
+  const fetchSubmissions = async () => {
+    console.log("fetch submissions")
+    try {
+      const submissionData = await API.graphql(graphqlOperation(listSubmissions))
+      const submissions = submissionData.data.listSubmissions.items
+      setSubmissions(submissions)
+    } catch (err) {
+      console.log("error fetching submissions:", err)
+    }
+  }
+
+  return (
+    <div>
+      <table>
+        <tr>
+          <th>Bounty</th>
+          <th>Date</th>
+        </tr>
+        {submissions.map((submission =>
+          <tr key={submission.ID}>
+            <th>{submission.bounty.title}</th>
+            <th>{formatDateTime(submission.date)}</th>
           </tr>
         ))}
       </table>
