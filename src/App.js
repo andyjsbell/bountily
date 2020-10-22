@@ -6,6 +6,7 @@ import Amplify, { API, graphqlOperation } from 'aws-amplify'
 
 import { createBounty, createSubmission } from './graphql/mutations'
 import { listBountys, listSubmissions } from './graphql/queries'
+import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
 
 import awsExports from "./aws-exports";
 Amplify.configure(awsExports);
@@ -70,7 +71,7 @@ const Bountys = () => {
   }
 
   const addSubmission = async (bountyID) => {
-    console.log("addSubmission called")
+    console.log("addSubmission called with bountyID:", bountyID)
     try {
       const submission = {
         bountyID,
@@ -102,7 +103,7 @@ const Bountys = () => {
         </thead>
         <tbody>
         {bountys.map((bounty =>
-          <tr key={bounty.ID}>
+          <tr key={bounty.id}>
             <td>{bounty.title}</td>
             <td>{formatDateTime(bounty.date)}</td>
             <td>{formatDateTime(bounty.deadline)}</td>
@@ -110,7 +111,7 @@ const Bountys = () => {
             <td>{bounty.submissions?.length}</td>
             <td>{bounty.owner}</td>
             <td>{bounty.outcome}</td>
-            <td><button onClick={() => addSubmission(bounty.ID)}>Add submission</button></td>
+            <td><button onClick={() => addSubmission(bounty.id)}>Add submission</button></td>
           </tr>
         ))}
         </tbody>
@@ -124,7 +125,23 @@ const Submissions = () => {
 
   useEffect(()=> {
     fetchSubmissions()
+    watchSubmissions()
   }, [])
+
+
+  const watchSubmissions = async () => {
+    console.log("watch submissions")
+    try {
+      // Subscribe to creation of submission
+      API.graphql(
+        graphqlOperation(onCreateSubmission)
+      ).subscribe({
+        next: (data) => fetchSubmissions()
+      });
+    } catch (err) {
+      console.log("error watching submissions:", err)
+    }
+  }
 
   const fetchSubmissions = async () => {
     console.log("fetch submissions")
@@ -132,6 +149,7 @@ const Submissions = () => {
       const submissionData = await API.graphql(graphqlOperation(listSubmissions))
       const submissions = submissionData.data.listSubmissions.items
       setSubmissions(submissions)
+      console.log(submissions)
     } catch (err) {
       console.log("error fetching submissions:", err)
     }
@@ -144,12 +162,14 @@ const Submissions = () => {
         <tr>
           <th>Bounty</th>
           <th>Date</th>
+          <th>Status</th>
         </tr>
         </thead>
         <tbody>{submissions.map((submission =>
-          <tr key={submission.ID}>
-            <td>{submission.bounty.title}</td>
+          <tr key={submission.id}>
+            <td>{submission.bountyID}</td>
             <td>{formatDateTime(submission.date)}</td>
+            <td>{submission.outcome}</td>
           </tr>
         ))}
         </tbody>
@@ -162,7 +182,10 @@ function App() {
   return (
     <div className="App">
       <h1>Bountily</h1>
+      <h3>Bounties</h3>
       <Bountys />
+      <h3>My submissions</h3>
+      <Submissions />
     </div>
   );
 }
