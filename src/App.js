@@ -174,19 +174,7 @@ const Submissions = () => {
       console.log("error fetching submissions:", err)
     }
   }
-
-  // const loadBounty = (bountyId) => {
-  //   console.log("get bounty:", bountyId)
-  //   try {
-  //     API.graphql(graphqlOperation(getBounty, { id: bountyId })).then(bountyData => {
-  //       console.log(bountyData)
-  //       return bountyData.data.getBounty.title
-  //     })
-  //   } catch (err) {
-  //     console.log("error getting bountyId:", err)
-  //   }
-  // }
-
+  
   return (
     <div>
       <table>
