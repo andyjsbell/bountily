@@ -83,7 +83,12 @@ const Bountys = () => {
         </tr>
         {bountys.map((bounty =>
           <tr key={bounty.ID}>
-            <th>{bounty.title}</th><th>{formatDateTime(bounty.date)}</th><th>{formatDateTime(bounty.deadline)}</th><th>{bounty.amount}</th><th>{bounty.submissions?.length}</th><th>{bounty.owner}</th><th>{bounty.outcome}</th>
+            <th>{bounty.title}</th>
+            <th>{formatDateTime(bounty.date)}</th>
+            <th>{formatDateTime(bounty.deadline)}</th>
+            <th>{bounty.amount}</th>
+            <th>{bounty.submissions?.length}</th>
+            <th>{bounty.owner}</th><th>{bounty.outcome}</th>
           </tr>
         ))}
       </table>
