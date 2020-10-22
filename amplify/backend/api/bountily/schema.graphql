@@ -8,6 +8,7 @@ enum Outcome {
 type Bounty @model {
   id: ID!
   title: String!
+  date: String!
   deadline: String!
   amount: Int!
   rules: String!

@@ -6,6 +6,7 @@ export const getBounty = /* GraphQL */ `
     getBounty(id: $id) {
       id
       title
+      date
       deadline
       amount
       rules
@@ -29,6 +30,7 @@ export const listBountys = /* GraphQL */ `
       items {
         id
         title
+        date
         deadline
         amount
         rules
@@ -49,6 +51,7 @@ export const getSubmission = /* GraphQL */ `
       bounty {
         id
         title
+        date
         deadline
         amount
         rules

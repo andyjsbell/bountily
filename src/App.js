@@ -26,10 +26,10 @@ const formatDateTime = (isoDate) => {
 }
 
 const Bountys = () => {
-  
-  const [bountys,setBountys] = useState([])
 
-  useEffect(()=> {
+  const [bountys, setBountys] = useState([])
+
+  useEffect(() => {
     fetchBountys()
   }, [])
 
@@ -54,10 +54,11 @@ const Bountys = () => {
         rules: "There are no rules",
         owner: "Andy",
         outcome: Outcome.Draft,
+        date: currentDateTimeISO(),
       }
-      await API.graphql(graphqlOperation(createBounty, {input: bounty}))
+      await API.graphql(graphqlOperation(createBounty, { input: bounty }))
       setBountys([...bountys, bounty])
-    } catch(err) {console.log("error creating bounty:", err)}
+    } catch (err) { console.log("error creating bounty:", err) }
   }
 
   const updateBounty = async () => {
@@ -73,11 +74,16 @@ const Bountys = () => {
       <button onClick={() => addBounty()}>Create Bounty</button>
       <table>
         <tr>
-          <th>Title</th><th>Deadline</th><th>Bounty</th><th>Hunters</th><th>Owner</th><th>Status</th>
+          <th>Title</th>
+          <th>Created</th>
+          <th>Deadline</th>
+          <th>Bounty</th>
+          <th>Hunters</th>
+          <th>Owner</th><th>Status</th>
         </tr>
         {bountys.map((bounty =>
           <tr key={bounty.ID}>
-            <th>{bounty.title}</th><th>{formatDateTime(bounty.deadline)}</th><th>{bounty.amount}</th><th>{bounty.submissions?.length}</th><th>{bounty.owner}</th><th>{bounty.outcome}</th>
+            <th>{bounty.title}</th><th>{formatDateTime(bounty.date)}</th><th>{formatDateTime(bounty.deadline)}</th><th>{bounty.amount}</th><th>{bounty.submissions?.length}</th><th>{bounty.owner}</th><th>{bounty.outcome}</th>
           </tr>
         ))}
       </table>
@@ -89,7 +95,7 @@ function App() {
   return (
     <div className="App">
       <h1>Bountily</h1>
-      <Bountys/>
+      <Bountys />
     </div>
   );
 }

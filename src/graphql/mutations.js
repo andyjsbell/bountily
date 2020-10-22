@@ -9,6 +9,7 @@ export const createBounty = /* GraphQL */ `
     createBounty(input: $input, condition: $condition) {
       id
       title
+      date
       deadline
       amount
       rules
@@ -30,6 +31,7 @@ export const updateBounty = /* GraphQL */ `
     updateBounty(input: $input, condition: $condition) {
       id
       title
+      date
       deadline
       amount
       rules
@@ -51,6 +53,7 @@ export const deleteBounty = /* GraphQL */ `
     deleteBounty(input: $input, condition: $condition) {
       id
       title
+      date
       deadline
       amount
       rules
@@ -75,6 +78,7 @@ export const createSubmission = /* GraphQL */ `
       bounty {
         id
         title
+        date
         deadline
         amount
         rules
@@ -103,6 +107,7 @@ export const updateSubmission = /* GraphQL */ `
       bounty {
         id
         title
+        date
         deadline
         amount
         rules
@@ -131,6 +136,7 @@ export const deleteSubmission = /* GraphQL */ `
       bounty {
         id
         title
+        date
         deadline
         amount
         rules
