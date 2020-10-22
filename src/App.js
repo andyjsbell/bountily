@@ -2,13 +2,14 @@ import logo from './logo.svg';
 import './App.css';
 
 import React, { useEffect, useState } from 'react'
-import Amplify, { API, graphqlOperation } from 'aws-amplify'
+import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
 import { createBounty, createSubmission } from './graphql/mutations'
 import { listSubmissions, getBounty } from './graphql/queries'
 import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
-import { withAuthenticator } from '@aws-amplify/ui-react'
+import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
+
 Amplify.configure(awsExports);
 
 // Implement our own query for bounties to include submissions
@@ -97,12 +98,13 @@ const Bountys = () => {
     console.log("createBounty called")
 
     try {
+      const currentUser = await Auth.currentUserInfo()
       const bounty = {
         title: "Test bounty",
         deadline: currentDateTimeISO(),
         amount: 100,
         rules: "There are no rules",
-        owner: "Andy",
+        owner: currentUser.username,
         outcome: Outcome.Draft,
       }
 
@@ -122,9 +124,10 @@ const Bountys = () => {
   const addSubmission = async (bountyID) => {
     console.log("addSubmission called with bountyID:", bountyID)
     try {
+      const currentUser = await Auth.currentUserInfo()
       const submission = {
         bountyID,
-        owner: "Andy",
+        owner: currentUser.username,
         answer: "",
         outcome: Outcome.Draft,
       }
@@ -156,7 +159,7 @@ const Bountys = () => {
             <td>{formatDateTime(bounty.createdAt)}</td>
             <td>{formatDateTime(bounty.deadline)}</td>
             <td>{bounty.amount}</td>
-            <td>{bounty.submissions.items.length}</td>
+            <td>{bounty.submissions.items?.length}</td>
             <td>{bounty.owner}</td>
             <td>{bounty.outcome}</td>
             <td><button onClick={() => addSubmission(bounty.id)}>Add submission</button></td>
@@ -210,6 +213,7 @@ const Submissions = () => {
           <th>Bounty</th>
           <th>Date</th>
           <th>Status</th>
+          <th>Owner</th>
         </tr>
         </thead>
         <tbody>{submissions.map((submission =>
@@ -217,6 +221,7 @@ const Submissions = () => {
             <td><Bounty bountyId={submission.bountyID}/></td>
             <td>{formatDateTime(submission.createdAt)}</td>
             <td>{submission.outcome}</td>
+            <td>{submission.owner}</td>
           </tr>
         ))}
         </tbody>
@@ -225,10 +230,34 @@ const Submissions = () => {
   )
 }
 
+const UserProfile = () => {
+  const [name, setName] = useState('')
+
+  const load = async () => {
+    try {
+      const info = await Auth.currentUserInfo()
+      setName(info.username)
+    } catch (err) {
+      console.log("failed to load user info:", err)
+    }
+  }
+  useEffect(() => {
+    load()
+  })
+
+  return (
+    <div>
+      <span>Welcome back <strong>{name}</strong></span>
+      <AmplifySignOut />
+    </div>
+  )
+}
 function App() {
+  
   return (
     <div className="App">
       <h1>Bountily</h1>
+      <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
       <h3>My submissions</h3>
