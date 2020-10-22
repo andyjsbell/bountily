@@ -7,7 +7,7 @@ import Amplify, { API, graphqlOperation } from 'aws-amplify'
 import { createBounty, createSubmission } from './graphql/mutations'
 import { listBountys, listSubmissions } from './graphql/queries'
 import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
-
+import { withAuthenticator } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 Amplify.configure(awsExports);
 
@@ -190,4 +190,4 @@ function App() {
   );
 }
 
-export default App;
+export default withAuthenticator(App)
