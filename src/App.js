@@ -18,8 +18,7 @@ const Outcome = Object.freeze({
 })
 
 const currentDateTimeToInt = () => {
-  // return new Date().getTime()
-  return 0
+  return new Date().getTime().toString()
 }
 
 const Bountys = () => {

@@ -8,7 +8,7 @@ enum Outcome {
 type Bounty @model {
   id: ID!
   title: String!
-  deadline: Int!
+  deadline: String!
   amount: Int!
   rules: String!
   owner: ID!
@@ -19,7 +19,7 @@ type Bounty @model {
 type Submission @model @key(name: "bySubmission", fields:["bountyID"]){
   bountyID: ID!
   bounty: Bounty @connection(fields: ["bountyID"])
-  date: Int!
+  date: String!
   owner: ID!
   answer: String!
   outcome: Outcome!
