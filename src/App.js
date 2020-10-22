@@ -46,7 +46,6 @@ const Bountys = () => {
     console.log("createBounty called")
 
     try {
-
       const bounty = {
         title: "Test bounty",
         deadline: currentDateTimeISO(),
@@ -56,6 +55,7 @@ const Bountys = () => {
         outcome: Outcome.Draft,
         date: currentDateTimeISO(),
       }
+
       await API.graphql(graphqlOperation(createBounty, { input: bounty }))
       setBountys([...bountys, bounty])
     } catch (err) { console.log("error creating bounty:", err) }
@@ -89,6 +89,7 @@ const Bountys = () => {
     <div>
       <button onClick={() => addBounty()}>Create Bounty</button>
       <table>
+        <thead>
         <tr>
           <th>Title</th>
           <th>Created</th>
@@ -98,17 +99,21 @@ const Bountys = () => {
           <th>Owner</th><th>Status</th>
           <th></th>
         </tr>
+        </thead>
+        <tbody>
         {bountys.map((bounty =>
           <tr key={bounty.ID}>
-            <th>{bounty.title}</th>
-            <th>{formatDateTime(bounty.date)}</th>
-            <th>{formatDateTime(bounty.deadline)}</th>
-            <th>{bounty.amount}</th>
-            <th>{bounty.submissions?.length}</th>
-            <th>{bounty.owner}</th><th>{bounty.outcome}</th>
-            <th><button onClick={() => addSubmission(bounty.ID)}>Add submission</button></th>
+            <td>{bounty.title}</td>
+            <td>{formatDateTime(bounty.date)}</td>
+            <td>{formatDateTime(bounty.deadline)}</td>
+            <td>{bounty.amount}</td>
+            <td>{bounty.submissions?.length}</td>
+            <td>{bounty.owner}</td>
+            <td>{bounty.outcome}</td>
+            <td><button onClick={() => addSubmission(bounty.ID)}>Add submission</button></td>
           </tr>
         ))}
+        </tbody>
       </table>
     </div>
   )
@@ -135,16 +140,19 @@ const Submissions = () => {
   return (
     <div>
       <table>
+        <thead>
         <tr>
           <th>Bounty</th>
           <th>Date</th>
         </tr>
-        {submissions.map((submission =>
+        </thead>
+        <tbody>{submissions.map((submission =>
           <tr key={submission.ID}>
-            <th>{submission.bounty.title}</th>
-            <th>{formatDateTime(submission.date)}</th>
+            <td>{submission.bounty.title}</td>
+            <td>{formatDateTime(submission.date)}</td>
           </tr>
         ))}
+        </tbody>
       </table>
     </div>
   )
