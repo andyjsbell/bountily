@@ -17,8 +17,12 @@ const Outcome = Object.freeze({
   "Cancelled": "CANCELLED",
 })
 
-const currentDateTimeToInt = () => {
-  return new Date().getTime().toString()
+const currentDateTimeISO = () => {
+  return new Date().toISOString()
+}
+
+const formatDateTime = (isoDate) => {
+  return new Date(isoDate).toLocaleString()
 }
 
 const Bountys = () => {
@@ -45,7 +49,7 @@ const Bountys = () => {
 
       const bounty = {
         title: "Test bounty",
-        deadline: currentDateTimeToInt(),
+        deadline: currentDateTimeISO(),
         amount: 100,
         rules: "There are no rules",
         owner: "Andy",
@@ -73,7 +77,7 @@ const Bountys = () => {
         </tr>
         {bountys.map((bounty =>
           <tr key={bounty.ID}>
-            <th>{bounty.title}</th><th>{bounty.deadline}</th><th>{bounty.amount}</th><th>{bounty.submissions?.length}</th><th>{bounty.owner}</th><th>{bounty.outcome}</th>
+            <th>{bounty.title}</th><th>{formatDateTime(bounty.deadline)}</th><th>{bounty.amount}</th><th>{bounty.submissions?.length}</th><th>{bounty.owner}</th><th>{bounty.outcome}</th>
           </tr>
         ))}
       </table>
