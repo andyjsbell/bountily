@@ -1,4 +1,3 @@
-scalar Date
 enum Outcome {
   DRAFT 
   OPEN
@@ -9,8 +8,8 @@ enum Outcome {
 type Bounty @model {
   id: ID!
   title: String!
-  deadline: Date!
-  amount: Number!
+  deadline: Int!
+  amount: Int!
   rules: String!
   owner: ID!
   outcome: Outcome!
@@ -20,8 +19,8 @@ type Bounty @model {
 type Submission @model @key(name: "bySubmission", fields:["bountyID"]){
   bountyID: ID!
   bounty: Bounty @connection(fields: ["bountyID"])
-  date: Date!
+  date: Int!
   owner: ID!
-  answer: Text!
+  answer: String!
   outcome: Outcome!
 }
