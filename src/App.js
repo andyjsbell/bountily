@@ -88,6 +88,7 @@ const Bountys = () => {
 function App() {
   return (
     <div className="App">
+      <h1>Bountily</h1>
       <Bountys/>
     </div>
   );
