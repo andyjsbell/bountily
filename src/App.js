@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 import Amplify, { API, graphqlOperation } from 'aws-amplify'
 
 import { createBounty, createSubmission } from './graphql/mutations'
-import { listBountys, listSubmissions } from './graphql/queries'
+import { listBountys, listSubmissions, getBounty } from './graphql/queries'
 import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
 import { withAuthenticator } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
@@ -24,6 +24,27 @@ const currentDateTimeISO = () => {
 
 const formatDateTime = (isoDate) => {
   return new Date(isoDate).toLocaleString()
+}
+
+const Bounty = ({bountyId}) => {
+
+  const [bounty, setBounty] = useState(null)
+
+  const load = async (id) => {
+    console.log("load bounty:", id)
+    try {
+      const bountyData = await API.graphql(graphqlOperation(getBounty, { id: bountyId }))
+      setBounty(bountyData.data.getBounty)
+    } catch (err) {
+      console.log("error getting bountyId:", err)
+    }
+  }
+  useEffect(() => {
+    load(bountyId)
+  }, [])
+  return (
+    <span>{bounty?.title}</span>
+  )
 }
 
 const Bountys = () => {
@@ -154,6 +175,18 @@ const Submissions = () => {
     }
   }
 
+  // const loadBounty = (bountyId) => {
+  //   console.log("get bounty:", bountyId)
+  //   try {
+  //     API.graphql(graphqlOperation(getBounty, { id: bountyId })).then(bountyData => {
+  //       console.log(bountyData)
+  //       return bountyData.data.getBounty.title
+  //     })
+  //   } catch (err) {
+  //     console.log("error getting bountyId:", err)
+  //   }
+  // }
+
   return (
     <div>
       <table>
@@ -166,7 +199,7 @@ const Submissions = () => {
         </thead>
         <tbody>{submissions.map((submission =>
           <tr key={submission.id}>
-            <td>{submission.bountyID}</td>
+            <td><Bounty bountyId={submission.bountyID}/></td>
             <td>{formatDateTime(submission.date)}</td>
             <td>{submission.outcome}</td>
           </tr>
