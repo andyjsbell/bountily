@@ -10,6 +10,11 @@
       "StackName": "amplify-bountily-dev-172309",
       "StackId": "arn:aws:cloudformation:eu-west-1:804068722217:stack/amplify-bountily-dev-172309/54dfe2f0-13b1-11eb-9ba1-02dbc193ed28",
       "AmplifyAppId": "d2tymsn30dr7rz"
+    },
+    "categories": {
+      "auth": {
+        "bountily46237f16": {}
+      }
     }
   }
 }
