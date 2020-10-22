@@ -57,8 +57,8 @@ const Bountys = () => {
         date: currentDateTimeISO(),
       }
 
-      await API.graphql(graphqlOperation(createBounty, { input: bounty }))
-      setBountys([...bountys, bounty])
+      const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
+      setBountys([...bountys, bountyData.data.createBounty])
     } catch (err) { console.log("error creating bounty:", err) }
   }
 
