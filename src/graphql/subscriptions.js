@@ -6,7 +6,6 @@ export const onCreateBounty = /* GraphQL */ `
     onCreateBounty {
       id
       title
-      date
       deadline
       amount
       rules
@@ -25,7 +24,6 @@ export const onUpdateBounty = /* GraphQL */ `
     onUpdateBounty {
       id
       title
-      date
       deadline
       amount
       rules
@@ -44,7 +42,6 @@ export const onDeleteBounty = /* GraphQL */ `
     onDeleteBounty {
       id
       title
-      date
       deadline
       amount
       rules
@@ -66,7 +63,6 @@ export const onCreateSubmission = /* GraphQL */ `
       bounty {
         id
         title
-        date
         deadline
         amount
         rules
@@ -75,7 +71,6 @@ export const onCreateSubmission = /* GraphQL */ `
         createdAt
         updatedAt
       }
-      date
       owner
       answer
       outcome
@@ -92,7 +87,6 @@ export const onUpdateSubmission = /* GraphQL */ `
       bounty {
         id
         title
-        date
         deadline
         amount
         rules
@@ -101,7 +95,6 @@ export const onUpdateSubmission = /* GraphQL */ `
         createdAt
         updatedAt
       }
-      date
       owner
       answer
       outcome
@@ -118,7 +111,6 @@ export const onDeleteSubmission = /* GraphQL */ `
       bounty {
         id
         title
-        date
         deadline
         amount
         rules
@@ -127,7 +119,6 @@ export const onDeleteSubmission = /* GraphQL */ `
         createdAt
         updatedAt
       }
-      date
       owner
       answer
       outcome

@@ -31,8 +31,7 @@ const Bounty = ({bountyId}) => {
   const [bounty, setBounty] = useState(null)
 
   const load = async (id) => {
-    console.log("load bounty:", id)
-    try {
+      try {
       const bountyData = await API.graphql(graphqlOperation(getBounty, { id: bountyId }))
       setBounty(bountyData.data.getBounty)
     } catch (err) {
@@ -59,6 +58,7 @@ const Bountys = () => {
     console.log("fetchBountys called")
     try {
       const bountyData = await API.graphql(graphqlOperation(listBountys))
+      console.log(bountyData)
       const bountys = bountyData.data.listBountys.items
       setBountys(bountys)
     } catch (err) { console.log('error fetching bountys:', err) }
@@ -75,7 +75,6 @@ const Bountys = () => {
         rules: "There are no rules",
         owner: "Andy",
         outcome: Outcome.Draft,
-        date: currentDateTimeISO(),
       }
 
       const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
@@ -96,7 +95,6 @@ const Bountys = () => {
     try {
       const submission = {
         bountyID,
-        date: currentDateTimeISO(),
         owner: "Andy",
         answer: "",
         outcome: Outcome.Draft,
@@ -126,7 +124,7 @@ const Bountys = () => {
         {bountys.map((bounty =>
           <tr key={bounty.id}>
             <td>{bounty.title}</td>
-            <td>{formatDateTime(bounty.date)}</td>
+            <td>{formatDateTime(bounty.createdAt)}</td>
             <td>{formatDateTime(bounty.deadline)}</td>
             <td>{bounty.amount}</td>
             <td>{bounty.submissions?.length}</td>
@@ -174,7 +172,7 @@ const Submissions = () => {
       console.log("error fetching submissions:", err)
     }
   }
-  
+
   return (
     <div>
       <table>
@@ -188,7 +186,7 @@ const Submissions = () => {
         <tbody>{submissions.map((submission =>
           <tr key={submission.id}>
             <td><Bounty bountyId={submission.bountyID}/></td>
-            <td>{formatDateTime(submission.date)}</td>
+            <td>{formatDateTime(submission.createdAt)}</td>
             <td>{submission.outcome}</td>
           </tr>
         ))}
