@@ -149,7 +149,6 @@ const Submissions = () => {
       const submissionData = await API.graphql(graphqlOperation(listSubmissions))
       const submissions = submissionData.data.listSubmissions.items
       setSubmissions(submissions)
-      console.log(submissions)
     } catch (err) {
       console.log("error fetching submissions:", err)
     }
