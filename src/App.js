@@ -11,6 +11,19 @@ import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardImg,
+  CardBody,
+  CardFooter,
+  Button
+} from "shards-react";
+
+import "bootstrap/dist/css/bootstrap.min.css";
+import "shards-ui/dist/css/shards.min.css"
+
 Amplify.configure(awsExports);
 
 const Outcome = Object.freeze({
@@ -28,6 +41,19 @@ const formatDateTime = (isoDate) => {
   return new Date(isoDate).toLocaleString()
 }
 
+      // <table>
+      //   <thead>
+      //   <tr>
+      //     <th>Title</th>
+      //     <th>Created</th>
+      //     <th>Deadline</th>
+      //     <th>Bounty</th>
+      //     <th>Hunters</th>
+      //     <th>Owner</th><th>Status</th>
+      //     <th></th>
+      //   </tr>
+      //   </thead>
+      //   <tbody></tbody>
 const Bounty = ({bountyId}) => {
 
   const [bounty, setBounty] = useState(null)
@@ -44,7 +70,18 @@ const Bounty = ({bountyId}) => {
     load(bountyId)
   }, [])
   return (
-    <span>{bounty?.title}</span>
+    <div className="bounty-item">
+      <Card style={{ maxWidth: "300px"  }}>
+        <CardHeader>{bounty?.title}</CardHeader>
+        <CardImg src="https://media.giphy.com/media/3TV78aXfU2bbeMOPtV/giphy.gif" />
+        <CardBody>
+          <CardTitle>{bounty?.title}</CardTitle>
+          <p>{bounty?.rules.substring(0,20) + '...'}</p>
+          <Button>Read more &rarr;</Button>
+        </CardBody>
+        <CardFooter>{formatDateTime(bounty?.deadline)}</CardFooter>
+      </Card>
+    </div>
   )
 }
 
@@ -111,34 +148,14 @@ const Bountys = () => {
 
   return (
     <div>
-      <button onClick={() => addBounty()}>Create Bounty</button>
-      <table>
-        <thead>
-        <tr>
-          <th>Title</th>
-          <th>Created</th>
-          <th>Deadline</th>
-          <th>Bounty</th>
-          <th>Hunters</th>
-          <th>Owner</th><th>Status</th>
-          <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        {bountys.map((bounty =>
-          <tr key={bounty.id}>
-            <td>{bounty.title}</td>
-            <td>{formatDateTime(bounty.createdAt)}</td>
-            <td>{formatDateTime(bounty.deadline)}</td>
-            <td>{bounty.amount}</td>
-            <td>{bounty.submissions.items?.length}</td>
-            <td>{bounty.owner}</td>
-            <td>{bounty.outcome}</td>
-            <td><button onClick={() => addSubmission(bounty.id)}>Add submission</button></td>
-          </tr>
-        ))}
-        </tbody>
-      </table>
+      <div className="bounty-control">
+        <Button onClick={() => addBounty()}>Create Bounty</Button>
+      </div>
+      <div className="bounty-container">
+          {bountys.map((bounty =>
+            <Bounty bountyId={bounty.id}/>
+          ))}
+      </div>
     </div>
   )
 }
@@ -232,8 +249,8 @@ function App() {
       <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
-      <h3>My submissions</h3>
-      <Submissions />
+      {/* <h3>My submissions</h3> */}
+      {/* <Submissions /> */}
     </div>
   );
 }
