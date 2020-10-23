@@ -6,40 +6,12 @@ import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
 import { createBounty, createSubmission } from './graphql/mutations'
 import { listSubmissions, getBounty } from './graphql/queries'
+import { listBountys } from './graphql/extra_mutations'
 import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 
 Amplify.configure(awsExports);
-
-// Implement our own query for bounties to include submissions
-export const listBountys = /* GraphQL */ `
-  query ListBountys(
-    $filter: ModelBountyFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listBountys(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        title
-        deadline
-        amount
-        rules
-        owner
-        outcome
-        createdAt
-        updatedAt
-        submissions {
-          items {
-            id
-          }
-        }
-      }
-      nextToken
-    }
-  }
-`;
 
 const Outcome = Object.freeze({
   "Draft": "DRAFT",
