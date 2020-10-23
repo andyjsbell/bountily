@@ -5,12 +5,16 @@ import React, { useEffect, useState } from 'react'
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
 import { createBounty, createSubmission } from './graphql/mutations'
-import { listSubmissions, getBounty } from './graphql/queries'
-import { listBountys } from './graphql/extra_mutations'
+import { listSubmissions } from './graphql/queries'
+import { listBountys, getBounty } from './graphql/extra_mutations'
 import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 import Unsplash, { toJson } from 'unsplash-js';
+import { FormTextarea, Modal, ModalBody, ModalHeader } from "shards-react";
+import { Form, FormInput, FormGroupInputGroup,
+  InputGroupText,
+  InputGroupAddon, FormGroup, InputGroup } from "shards-react";
 
 import {
   Card,
@@ -52,10 +56,14 @@ const formatDateTime = (isoDate) => {
 const Bounty = ({bountyId}) => {
 
   const [bounty, setBounty] = useState(null)
+  const [open, setOpen] = useState(false)
+
   const load = async (id) => {
       try {
       const bountyData = await API.graphql(graphqlOperation(getBounty, { id: bountyId }))
       setBounty(bountyData.data.getBounty)
+
+      console.log(bountyData)
     } catch (err) {
       console.log("error getting bountyId:", err)
     }
@@ -63,15 +71,48 @@ const Bounty = ({bountyId}) => {
   useEffect(() => {
     load(bountyId)
   }, [])
+
+  const addSubmission = async (bountyID) => {
+    console.log("addSubmission called with bountyID:", bountyID)
+    try {
+      const currentUser = await Auth.currentUserInfo()
+      const submission = {
+        bountyID,
+        owner: currentUser.username,
+        answer: "",
+        outcome: Outcome.Draft,
+      }
+      await API.graphql(graphqlOperation(createSubmission, {input: submission}))
+      //Close modal
+      setOpen(false)
+      // reload our bounty
+      load(bountyID)
+      //TODO we want to subscribe to bounty to watch for changes to update 
+    } catch (err) {
+      console.log("error creating submission:", err)
+    }
+  }
+
+  const toggle = () => {
+    setOpen(!open)
+  }
+  
   return (
     <div className="bounty-item">
       <Card style={{ maxWidth: "300px"  }}>
-        <CardHeader>{bounty?.title}</CardHeader>
+        <CardHeader>${bounty?.amount} #{bounty?.submissions?.items?.length}</CardHeader>
         <CardImg src={bounty?.url} />
         <CardBody>
           <CardTitle>{bounty?.title}</CardTitle>
           <p>{bounty?.rules.substring(0,20) + '...'}</p>
-          <Button>Read more &rarr;</Button>
+          <Button onClick={() => toggle()}>More info &rarr;</Button>
+          <Modal open={open} toggle={toggle}>
+            <ModalHeader><strong>{bounty?.title}</strong></ModalHeader>
+            <ModalBody>
+              <div>{bounty?.rules}</div> 
+              <div><Button onClick={() => addSubmission(bounty?.id)}>Go for it!</Button></div>
+            </ModalBody>
+          </Modal>
         </CardBody>
         <CardFooter>{formatDateTime(bounty?.deadline)}</CardFooter>
       </Card>
@@ -82,11 +123,20 @@ const Bounty = ({bountyId}) => {
 const Bountys = () => {
 
   const [bountys, setBountys] = useState([])
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [rules, setRules] = useState('')
+  const [amount, setAmount] = useState('')
 
   useEffect(() => {
     fetchBountys()
   }, [])
 
+  
+  const toggle = () => {
+    setOpen(!open)
+  }
+  
   const fetchBountys = async () => {
     console.log("fetchBountys called")
     try {
@@ -101,15 +151,15 @@ const Bountys = () => {
 
     try {
       const currentUser = await Auth.currentUserInfo()
-      const random = await unsplash.photos.getRandomPhoto()
-      const json = await toJson(random)
-      const url = json.urls.thumb
-
+      // const random = await unsplash.photos.getRandomPhoto()
+      // const json = await toJson(random)
+      // const url = json.urls.thumb
+      const url = "none"
       const bounty = {
-        title: "Test bounty",
+        title,
         deadline: currentDateTimeISO(),
-        amount: 100,
-        rules: "There are no rules",
+        amount: parseInt(amount),
+        rules,
         owner: currentUser.username,
         outcome: Outcome.Draft,
         url
@@ -117,6 +167,8 @@ const Bountys = () => {
 
       const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
       setBountys([...bountys, bountyData.data.createBounty])
+      //Close modal
+      setOpen(false)
     } catch (err) { console.log("error creating bounty:", err) }
   }
 
@@ -128,26 +180,32 @@ const Bountys = () => {
 
   }
 
-  const addSubmission = async (bountyID) => {
-    console.log("addSubmission called with bountyID:", bountyID)
-    try {
-      const currentUser = await Auth.currentUserInfo()
-      const submission = {
-        bountyID,
-        owner: currentUser.username,
-        answer: "",
-        outcome: Outcome.Draft,
-      }
-      await API.graphql(graphqlOperation(createSubmission, {input: submission}))
-    } catch (err) {
-      console.log("error creating submission:", err)
-    }
-  }
-
   return (
     <div>
       <div className="bounty-control">
-        <Button onClick={() => addBounty()}>Create a Bounty</Button>
+        <Button onClick={() => toggle()}>Create a Bounty</Button>
+        <Modal open={open} toggle={toggle}>
+          <ModalHeader>Create a Bounty</ModalHeader>
+          <ModalBody>
+            <Form>
+              <FormGroup>
+                <InputGroup className="mb-2">
+                  <FormInput placeholder="Title" onChange={e => setTitle(e.target.value)}/>
+                </InputGroup>
+                <InputGroup className="mb-2">
+                  <InputGroupAddon type="prepend">
+                    <InputGroupText>$</InputGroupText>
+                  </InputGroupAddon>
+                  <FormInput placeholder="Amount" type="number" onChange={e => setAmount(e.target.value)}/>
+                </InputGroup> 
+                <InputGroup className="mb-2">
+                  <FormTextarea id="#rules" placeholder="Rules" onChange={e => setRules(e.target.value)}/>
+                </InputGroup>
+              </FormGroup>
+            </Form>
+            <div><Button onClick={() => addBounty()}>Go for it!</Button></div>
+          </ModalBody>
+        </Modal>
       </div>
       <div className="bounty-container">
           {bountys.map((bounty =>
@@ -248,8 +306,8 @@ function App() {
       <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
-      {/* <h3>My submissions</h3> */}
-      {/* <Submissions /> */}
+      {/* <h3>My submissions</h3>
+      <Submissions /> */}
     </div>
   );
 }

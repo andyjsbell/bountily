@@ -26,3 +26,25 @@ export const listBountys = /* GraphQL */ `
     }
   }
 `;
+
+export const getBounty = /* GraphQL */ `
+  query GetBounty($id: ID!) {
+    getBounty(id: $id) {
+      id
+      title
+      deadline
+      amount
+      rules
+      owner
+      outcome
+      submissions {
+        items {
+          id
+        }
+      }
+      url
+      createdAt
+      updatedAt
+    }
+  }
+`;
