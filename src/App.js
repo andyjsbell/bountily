@@ -10,6 +10,7 @@ import { listBountys } from './graphql/extra_mutations'
 import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
+import Unsplash, { toJson } from 'unsplash-js';
 
 import {
   Card,
@@ -19,12 +20,19 @@ import {
   CardBody,
   CardFooter,
   Button
-} from "shards-react";
+} from "shards-react"
 
-import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/css/bootstrap.min.css"
 import "shards-ui/dist/css/shards.min.css"
 
 Amplify.configure(awsExports);
+
+const APP_ACCESS_KEY = "3-4zpPqehzktn92aK0Ym7Xgxqy6hoUD-JSx3nQYqAc0"
+const SECRET_KEY = "uEucq6KP2XxV4RPC9Jx7IFH9gmmbQykAjMzH6HZR4tg"
+const unsplash = new Unsplash({ 
+  accessKey: APP_ACCESS_KEY, 
+  secret: SECRET_KEY 
+})
 
 const Outcome = Object.freeze({
   "Draft": "DRAFT",
@@ -41,23 +49,9 @@ const formatDateTime = (isoDate) => {
   return new Date(isoDate).toLocaleString()
 }
 
-      // <table>
-      //   <thead>
-      //   <tr>
-      //     <th>Title</th>
-      //     <th>Created</th>
-      //     <th>Deadline</th>
-      //     <th>Bounty</th>
-      //     <th>Hunters</th>
-      //     <th>Owner</th><th>Status</th>
-      //     <th></th>
-      //   </tr>
-      //   </thead>
-      //   <tbody></tbody>
 const Bounty = ({bountyId}) => {
 
   const [bounty, setBounty] = useState(null)
-
   const load = async (id) => {
       try {
       const bountyData = await API.graphql(graphqlOperation(getBounty, { id: bountyId }))
@@ -73,7 +67,7 @@ const Bounty = ({bountyId}) => {
     <div className="bounty-item">
       <Card style={{ maxWidth: "300px"  }}>
         <CardHeader>{bounty?.title}</CardHeader>
-        <CardImg src="https://media.giphy.com/media/3TV78aXfU2bbeMOPtV/giphy.gif" />
+        <CardImg src={bounty?.url} />
         <CardBody>
           <CardTitle>{bounty?.title}</CardTitle>
           <p>{bounty?.rules.substring(0,20) + '...'}</p>
@@ -97,7 +91,6 @@ const Bountys = () => {
     console.log("fetchBountys called")
     try {
       const bountyData = await API.graphql(graphqlOperation(listBountys))
-      console.log(bountyData)
       const bountys = bountyData.data.listBountys.items
       setBountys(bountys)
     } catch (err) { console.log('error fetching bountys:', err) }
@@ -108,6 +101,10 @@ const Bountys = () => {
 
     try {
       const currentUser = await Auth.currentUserInfo()
+      const random = await unsplash.photos.getRandomPhoto()
+      const json = await toJson(random)
+      const url = json.urls.thumb
+
       const bounty = {
         title: "Test bounty",
         deadline: currentDateTimeISO(),
@@ -115,6 +112,7 @@ const Bountys = () => {
         rules: "There are no rules",
         owner: currentUser.username,
         outcome: Outcome.Draft,
+        url
       }
 
       const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
@@ -149,7 +147,7 @@ const Bountys = () => {
   return (
     <div>
       <div className="bounty-control">
-        <Button onClick={() => addBounty()}>Create Bounty</Button>
+        <Button onClick={() => addBounty()}>Create a Bounty</Button>
       </div>
       <div className="bounty-container">
           {bountys.map((bounty =>
@@ -220,6 +218,7 @@ const Submissions = () => {
 }
 
 const UserProfile = () => {
+  
   const [name, setName] = useState('')
 
   const load = async () => {
@@ -233,7 +232,7 @@ const UserProfile = () => {
   useEffect(() => {
     load()
   })
-
+  
   return (
     <div>
       <span>Welcome back <strong>{name}</strong></span>
