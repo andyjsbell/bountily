@@ -14,6 +14,7 @@ type Bounty @model {
   owner: ID!
   outcome: Outcome!
   submissions: [Submission] @connection(keyName: "bySubmission", fields: ["id"])
+  url: String
 }
 
 type Submission @model @key(name: "bySubmission", fields:["bountyID"]){

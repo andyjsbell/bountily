@@ -14,6 +14,7 @@ export const getBounty = /* GraphQL */ `
       submissions {
         nextToken
       }
+      url
       createdAt
       updatedAt
     }
@@ -34,6 +35,7 @@ export const listBountys = /* GraphQL */ `
         rules
         owner
         outcome
+        url
         createdAt
         updatedAt
       }
@@ -54,6 +56,7 @@ export const getSubmission = /* GraphQL */ `
         rules
         owner
         outcome
+        url
         createdAt
         updatedAt
       }

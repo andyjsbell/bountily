@@ -17,6 +17,7 @@ export const createBounty = /* GraphQL */ `
       submissions {
         nextToken
       }
+      url
       createdAt
       updatedAt
     }
@@ -38,6 +39,7 @@ export const updateBounty = /* GraphQL */ `
       submissions {
         nextToken
       }
+      url
       createdAt
       updatedAt
     }
@@ -59,6 +61,7 @@ export const deleteBounty = /* GraphQL */ `
       submissions {
         nextToken
       }
+      url
       createdAt
       updatedAt
     }
@@ -80,6 +83,7 @@ export const createSubmission = /* GraphQL */ `
         rules
         owner
         outcome
+        url
         createdAt
         updatedAt
       }
@@ -107,6 +111,7 @@ export const updateSubmission = /* GraphQL */ `
         rules
         owner
         outcome
+        url
         createdAt
         updatedAt
       }
@@ -134,6 +139,7 @@ export const deleteSubmission = /* GraphQL */ `
         rules
         owner
         outcome
+        url
         createdAt
         updatedAt
       }
