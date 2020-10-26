@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
 import { listSubmissions, listWallets } from './graphql/queries'
-import { createBounty, createSubmission, deleteBounty, updateBounty } from './graphql/mutations'
+import { createBounty, createSubmission, createWallet, deleteBounty, updateBounty } from './graphql/mutations'
 import { listBountys, getBounty } from './graphql/extra_mutations'
 import { onCreateSubmission, OnCreateSubmission, onDeleteBounty } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
@@ -351,6 +351,7 @@ const UserProfile = () => {
     <div>
       <span>Welcome back <strong>{name}</strong></span>
       <AmplifySignOut />
+      <Wallet/>
     </div>
   )
 }
@@ -367,7 +368,6 @@ const Wallet = () => {
     console.log("fetchWallet called")
     try {
       const currentUser = await Auth.currentUserInfo()
-      console.log(currentUser.id)
       const walletData = await API.graphql(graphqlOperation(listWallets, {
         filter:{
           user: {
@@ -375,9 +375,21 @@ const Wallet = () => {
           }
         }
       }))
-      const balance = walletData.data.listWallets?.items[0]?.balance
-      console.log("wallet:", balance)
-      setWallet(1.0)
+
+      if (walletData.data.listWallets?.items.length === 0) {
+        await API.graphql(graphqlOperation(createWallet, 
+          {
+            input: {
+              user: currentUser.id,
+              balance: 100.0
+            }
+          }))
+          setWallet(100.0)
+      } else {
+        const balance = walletData.data.listWallets?.items[0]?.balance
+        console.log("wallet:", balance)
+        setWallet(1.0)
+      }
     } catch (err) { console.log('error fetching bountys:', err) }
   }
 
@@ -389,11 +401,10 @@ function App() {
   
   return (
     <div className="App">
-      {/* <h1>Bountily</h1>
+      <h1>Bountily</h1>
       <UserProfile />
       <h3>Bounties</h3>
-      <Bountys /> */}
-      <Wallet/>
+      <Bountys />
       {/* <h3>My submissions</h3>
       <Submissions /> */}
     </div>
