@@ -151,10 +151,10 @@ const Bountys = () => {
 
     try {
       const currentUser = await Auth.currentUserInfo()
-      // const random = await unsplash.photos.getRandomPhoto()
-      // const json = await toJson(random)
-      // const url = json.urls.thumb
-      const url = "none"
+      const random = await unsplash.photos.getRandomPhoto()
+      const json = await toJson(random)
+      const url = json.urls.thumb
+      
       const bounty = {
         title,
         deadline: currentDateTimeISO(),
