@@ -241,23 +241,15 @@ const Bountys = () => {
         }
     
         const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
-        
         const newBalance = balance - amountAsNumber
         const transaction = {
           id: walletData.data.listWallets?.items[0].id,
           balance: newBalance
         }
 
-        console.log(transaction)
-        // update wallet
-        // await API.graphql(graphqlOperation(updateWallet, 
-        //   { input: transaction }   
-        // ))
-
         await API.graphql(graphqlOperation(updateWallet, { 
           input: { 
-            id: walletData.data.listWallets?.items[0].id, 
-            balance: newBalance
+            transaction
           }
         }));
         
