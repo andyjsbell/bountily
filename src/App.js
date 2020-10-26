@@ -110,7 +110,10 @@ const Bounty = ({bountyId}) => {
             <ModalHeader><strong>{bounty?.title}</strong></ModalHeader>
             <ModalBody>
               <div>{bounty?.rules}</div> 
-              <div><Button onClick={() => addSubmission(bounty?.id)}>Go for it!</Button></div>
+              <div>
+                <Button className="button-modal" onClick={() => addSubmission(bounty?.id)}>Go for it!</Button>
+                <Button className="button-modal" theme="secondary" onClick={()=> toggle()}>Cancel</Button>
+              </div>
             </ModalBody>
           </Modal>
         </CardBody>
@@ -203,7 +206,10 @@ const Bountys = () => {
                 </InputGroup>
               </FormGroup>
             </Form>
-            <div><Button onClick={() => addBounty()}>Go for it!</Button></div>
+            <div>
+              <Button className="button-modal" onClick={() => addBounty()}>Go for it!</Button>
+              <Button className="button-modal" onClick={() => toggle()} theme="secondary">Cancel</Button>
+            </div>
           </ModalBody>
         </Modal>
       </div>
