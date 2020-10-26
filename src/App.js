@@ -271,7 +271,7 @@ const Bountys = () => {
       </div>
       <div className="bounty-container">
           {bountys.map((bounty =>
-            <Bounty bountyId={bounty.id}/>
+            <Bounty bountyId={bounty.id} key={bounty.id}/>
           ))}
       </div>
     </div>
