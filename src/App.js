@@ -248,9 +248,7 @@ const Bountys = () => {
         }
 
         await API.graphql(graphqlOperation(updateWallet, { 
-          input: { 
-            transaction
-          }
+          input: transaction
         }));
         
         setBountys([...bountys, bountyData.data.createBounty])
@@ -390,6 +388,7 @@ const Wallet = () => {
 
   useEffect(() => {
     fetchWallet()
+    watchWallet()
   }, [])
 
   const watchWallet = async () => {
