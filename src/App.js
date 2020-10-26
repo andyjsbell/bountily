@@ -201,11 +201,7 @@ const Bountys = () => {
         graphqlOperation(onDeleteBounty)
       ).subscribe({
         next: (data) => { 
-          console.log(data.value.data.onDeleteBounty.id)
-          // const deleteId = data.onDeleteBounty.id
-          console.log(bountys)
-          // let updatedBountys = bountys.filter((v, i, a) => v.id !== deleteId)
-          // setBountys(updatedBountys)
+          fetchBountys()
         }
       });
     } catch (err) {
