@@ -182,7 +182,12 @@ const Bountys = () => {
   const [rules, setRules] = useState('')
   const [amount, setAmount] = useState('')
   const [deadline, setDeadline] = useState('')
-  const [valid, setValid] = useState(false)
+  const [valid, setValid] = useState({
+    title: true,
+    rules: true,
+    amount: true,
+    deadline: true,
+  })
 
   useEffect(() => {
     fetchBountys()
@@ -220,10 +225,14 @@ const Bountys = () => {
     }
   }
 
-  // const validate = () => {
-  //   if (title)
-  //   return false
-  // }
+  const validate = () => {
+    valid.title = title.length > 2
+    valid.amount = amount > 0
+    valid.deadline = deadline !== ""
+    valid.rules = rules !== "" && rules.length > 3
+
+    return valid.title && valid.amount && valid.deadline && valid.rules
+  }
 
   const addBounty = async () => {
     console.log("createBounty called")
@@ -240,40 +249,46 @@ const Bountys = () => {
         }
       }))
 
-      const balance = walletData.data.listWallets?.items[0]?.balance
-
-      if (balance >= amountAsNumber) {
-        
-        const random = await unsplash.photos.getRandomPhoto()
-        const json = await toJson(random)
-        const url = json.urls.thumb
-      
-        const bounty = {
-          title,
-          deadline: deadline,
-          amount: amountAsNumber,
-          rules,
-          owner: currentUser.username,
-          outcome: Outcome.Draft,
-          url
-        }
-    
-        const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
+      if (validate()) {
+        console.log("validate is true")
+        const balance = walletData.data.listWallets?.items[0]?.balance
         const newBalance = balance - amountAsNumber
-        const transaction = {
-          id: walletData.data.listWallets?.items[0].id,
-          balance: newBalance
+        if (newBalance >= 0) {
+          
+          const random = await unsplash.photos.getRandomPhoto()
+          const json = await toJson(random)
+          const url = json.urls.thumb
+        
+          const bounty = {
+            title,
+            deadline: deadline,
+            amount: amountAsNumber,
+            rules,
+            owner: currentUser.username,
+            outcome: Outcome.Draft,
+            url
+          }
+      
+          const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
+          
+          const transaction = {
+            id: walletData.data.listWallets?.items[0].id,
+            balance: newBalance
+          }
+
+          await API.graphql(graphqlOperation(updateWallet, { 
+            input: transaction
+          }));
+          
+          setBountys([...bountys, bountyData.data.createBounty])
+          //Close modal
+          setOpen(false)
+        } else {
+          console.log("invalid form")
+          setOpen(true)
         }
 
-        await API.graphql(graphqlOperation(updateWallet, { 
-          input: transaction
-        }));
-        
-        setBountys([...bountys, bountyData.data.createBounty])
       }
-
-      //Close modal
-      setOpen(false)
     } catch (err) { console.log("error creating bounty:", err) }
   }
 
@@ -287,19 +302,19 @@ const Bountys = () => {
             <Form>
               <FormGroup>
                 <InputGroup className="mb-2">
-                  <FormInput placeholder="Title" onChange={e => setTitle(e.target.value)}/>
+                  <FormInput invalid={!valid.title} placeholder="Title" onChange={e => setTitle(e.target.value)}/>
                 </InputGroup>
                 <InputGroup className="mb-2">
                   <InputGroupAddon type="prepend">
                     <InputGroupText>{BALANCE_TOKEN}</InputGroupText>
                   </InputGroupAddon>
-                  <FormInput placeholder={BALANCE_TOKEN_NAME} type="number" onChange={e => setAmount(e.target.value)}/>
+                  <FormInput invalid={!valid.amount} placeholder={BALANCE_TOKEN_NAME} type="number" onChange={e => setAmount(e.target.value)}/>
                 </InputGroup> 
                 <InputGroup className="mb-2">
-                  <FormInput type="date" onChange={(e) => setDeadline(e.target.value)}/>
+                  <FormInput invalid={!valid.deadline} type="date" onChange={(e) => setDeadline(e.target.value)}/>
                 </InputGroup>
                 <InputGroup className="mb-2">
-                  <FormTextarea id="#rules" placeholder="Rules" rows="10" onChange={e => setRules(e.target.value)}/>
+                  <FormTextarea invalid={!valid.rules} id="#rules" placeholder="Rules" rows="10" onChange={e => setRules(e.target.value)}/>
                 </InputGroup>
               </FormGroup>
             </Form>
