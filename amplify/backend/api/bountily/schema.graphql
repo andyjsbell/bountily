@@ -9,7 +9,7 @@ type Bounty @model {
   id: ID!
   title: String!
   deadline: String!
-  amount: Int!
+  amount: Float!
   rules: String!
   owner: ID!
   outcome: Outcome!
@@ -23,4 +23,15 @@ type Submission @model @key(name: "bySubmission", fields:["bountyID"]){
   owner: ID!
   answer: String!
   outcome: Outcome!
+}
+
+type Wallet @model {
+  user: ID!
+  balance: Float!
+}
+
+type Transaction @model {
+  from: ID!
+  to: ID!
+  amount: Float!
 }
