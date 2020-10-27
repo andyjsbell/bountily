@@ -181,6 +181,8 @@ const Bountys = () => {
   const [title, setTitle] = useState('')
   const [rules, setRules] = useState('')
   const [amount, setAmount] = useState('')
+  const [deadline, setDeadline] = useState('')
+  const [valid, setValid] = useState(false)
 
   useEffect(() => {
     fetchBountys()
@@ -218,6 +220,11 @@ const Bountys = () => {
     }
   }
 
+  // const validate = () => {
+  //   if (title)
+  //   return false
+  // }
+
   const addBounty = async () => {
     console.log("createBounty called")
 
@@ -243,7 +250,7 @@ const Bountys = () => {
       
         const bounty = {
           title,
-          deadline: currentDateTimeISO(),
+          deadline: deadline,
           amount: amountAsNumber,
           rules,
           owner: currentUser.username,
@@ -288,6 +295,9 @@ const Bountys = () => {
                   </InputGroupAddon>
                   <FormInput placeholder={BALANCE_TOKEN_NAME} type="number" onChange={e => setAmount(e.target.value)}/>
                 </InputGroup> 
+                <InputGroup className="mb-2">
+                  <FormInput type="date" onChange={(e) => setDeadline(e.target.value)}/>
+                </InputGroup>
                 <InputGroup className="mb-2">
                   <FormTextarea id="#rules" placeholder="Rules" rows="10" onChange={e => setRules(e.target.value)}/>
                 </InputGroup>
@@ -371,7 +381,7 @@ const Submissions = () => {
 const UserProfile = () => {
   
   const [name, setName] = useState('')
-
+ 
   const load = async () => {
     try {
       const info = await Auth.currentUserInfo()
@@ -409,38 +419,17 @@ const UserProfile = () => {
           </Col>
         </Row>
     </Container>
-    // <div>
-    //   <span></span>
-
-    // </div>
   )
 }
 
 const useTransactions = () => {
 
+  console.log("useTransactions called")
   const [transactions, setTransacions] = useState([])
 
   useEffect(() => {
     fetchTransactions()
-    watchTransactions()
-  })
-
-  const watchTransactions = async () => {
-    console.log("watch transactions")
-    try {
-      // Subscribe to updates on wallet, TODO, add filter for just user's filter
-      API.graphql(
-        graphqlOperation(onCreateTransaction)
-      ).subscribe({
-        next: (data) => {
-          console.log(data)
-          fetchTransactions()
-        }
-      });
-    } catch (err) {
-      console.log("error watching submissions:", err)
-    }
-  }
+  }, [])
 
   const fetchTransactions = async () => {
     console.log("fetchTransactions called")
@@ -463,16 +452,6 @@ const useTransactions = () => {
   }
 
   return transactions
-}
-
-const Transaction = ({transaction}) => {
-  return (
-    <div>
-      from: {transaction.from}
-      to: {transaction.to}
-      amount: {transaction.amount}
-    </div>
-  )
 }
 
 const Wallet = () => {
