@@ -4,10 +4,10 @@ import './App.css';
 import React, { useEffect, useState } from 'react'
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
-import { createBounty, createSubmission } from './graphql/mutations'
 import { listSubmissions, listWallets } from './graphql/queries'
+import { createBounty, createSubmission, deleteBounty, updateBounty } from './graphql/mutations'
 import { listBountys, getBounty } from './graphql/extra_mutations'
-import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
+import { onCreateSubmission, OnCreateSubmission, onDeleteBounty } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 import Unsplash, { toJson } from 'unsplash-js';
@@ -51,6 +51,45 @@ const currentDateTimeISO = () => {
 
 const formatDateTime = (isoDate) => {
   return new Date(isoDate).toLocaleString()
+}
+
+const CancelBounty = ({bountyId, bountyName}) => {
+  const [open, setOpen] = useState(false)
+
+  const toggle = () => {
+    setOpen(!open)
+  }
+
+  const cancelBounty = async (bountyID) => {
+    console.log("cancelBounty called")
+    try {
+      await API.graphql(graphqlOperation(deleteBounty, {
+        input: {
+          id: bountyID
+        }
+      }))
+    } catch (err) {
+      console.log("error canceling bounty:", err)
+    }
+
+    setOpen(false)
+  }
+
+  return (
+    <div>
+      <Button onClick={() => toggle()}>Cancel</Button>
+      <Modal open={open} toggle={toggle}>
+        <ModalHeader><strong>Cancel Bounty {bountyName}</strong></ModalHeader>
+        <ModalBody>
+          <div>Are you sure you want to cancel the bounty?</div> 
+          <div>
+            <Button className="button-modal" onClick={() => cancelBounty(bountyId)}>Go for it!</Button>
+            <Button className="button-modal" theme="secondary" onClick={()=> toggle()}>Cancel</Button>
+          </div>
+        </ModalBody>
+      </Modal>
+    </div>
+  )
 }
 
 const Bounty = ({bountyId}) => {
@@ -104,6 +143,9 @@ const Bounty = ({bountyId}) => {
           <CardTitle>{bounty?.title}</CardTitle>
           <p>{bounty?.rules.substring(0,20) + '...'}</p>
           <Button onClick={() => toggle()}>More info &rarr;</Button>
+          <CancelBounty
+            bountyId={bounty?.id}
+            bountyName={bounty?.title}/>
           <Modal open={open} toggle={toggle}>
             <ModalHeader><strong>{bounty?.title}</strong></ModalHeader>
             <ModalBody>
@@ -131,6 +173,7 @@ const Bountys = () => {
 
   useEffect(() => {
     fetchBountys()
+    watchBountys()
   }, [])
 
   
@@ -144,7 +187,24 @@ const Bountys = () => {
       const bountyData = await API.graphql(graphqlOperation(listBountys))
       const bountys = bountyData.data.listBountys.items
       setBountys(bountys)
+      console.log("bountys:", bountys)
     } catch (err) { console.log('error fetching bountys:', err) }
+  }
+
+  const watchBountys = async () => {
+    console.log("watch bountys")
+    try {
+      // Subscribe to creation of submission
+      API.graphql(
+        graphqlOperation(onDeleteBounty)
+      ).subscribe({
+        next: (data) => { 
+          fetchBountys()
+        }
+      });
+    } catch (err) {
+      console.log("error watching submissions:", err)
+    }
   }
 
   const addBounty = async () => {
@@ -171,14 +231,6 @@ const Bountys = () => {
       //Close modal
       setOpen(false)
     } catch (err) { console.log("error creating bounty:", err) }
-  }
-
-  const updateBounty = async () => {
-
-  }
-
-  const cancelBounty = async () => {
-
   }
 
   return (
@@ -213,7 +265,7 @@ const Bountys = () => {
       </div>
       <div className="bounty-container">
           {bountys.map((bounty =>
-            <Bounty bountyId={bounty.id}/>
+            <Bounty bountyId={bounty.id} key={bounty.id}/>
           ))}
       </div>
     </div>
