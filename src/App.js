@@ -26,6 +26,13 @@ import {
   Button
 } from "shards-react"
 
+import {
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem
+} from "shards-react";
+
 import "bootstrap/dist/css/bootstrap.min.css"
 import "shards-ui/dist/css/shards.min.css"
 
@@ -373,6 +380,11 @@ const UserProfile = () => {
       console.log("failed to load user info:", err)
     }
   }
+
+  const signout = () => {
+
+  }
+
   useEffect(() => {
     load()
   })
@@ -381,6 +393,7 @@ const UserProfile = () => {
     <div>
       <span>{name}</span>
       <Wallet/>
+      <Button onClick={() => signout()}>Signout</Button>
       {/* <AmplifySignOut />
        */}
       {/* <Transactions/> */}
@@ -388,7 +401,7 @@ const UserProfile = () => {
   )
 }
 
-const Transactions = () => {
+const useTransactions = () => {
 
   const [transactions, setTransacions] = useState([])
 
@@ -434,15 +447,7 @@ const Transactions = () => {
     } catch (err) { console.log('error fetching transactions:', err) }
   }
 
-  return (
-    <div className="bounty-container">
-      {transactions.map((transaction =>
-        <Transaction 
-          transaction={transaction} 
-          key={transaction.id}/>
-      ))}
-    </div>
-  )
+  return transactions
 }
 
 const Transaction = ({transaction}) => {
@@ -458,6 +463,12 @@ const Transaction = ({transaction}) => {
 const Wallet = () => {
   
   const [wallet, setWallet] = useState(0.0)
+  const [open, setOpen] = useState(false)
+  const transactions = useTransactions();
+
+  const toggle = () => {
+    setOpen(!open)
+  }
 
   useEffect(() => {
     fetchWallet()
@@ -510,9 +521,22 @@ const Wallet = () => {
   }
 
   return (
-    <span>Wallet: {BALANCE_TOKEN} {wallet}</span>
+    <Dropdown open={open} toggle={() => toggle()}>
+      <DropdownToggle outline>{BALANCE_TOKEN} {wallet}</DropdownToggle>
+      <DropdownMenu>
+        {
+        transactions?.length === 0 ?
+          <DropdownItem>No transactions</DropdownItem>
+          :
+          transactions.map((transaction =>
+            <DropdownItem>{BALANCE_TOKEN} {transaction.amount}</DropdownItem>
+          ))
+        }
+      </DropdownMenu>
+    </Dropdown>
   )
 }
+
 function App() {
   
   return (
