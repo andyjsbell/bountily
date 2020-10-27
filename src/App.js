@@ -4,10 +4,10 @@ import './App.css';
 import React, { useEffect, useState } from 'react'
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
-import { listSubmissions, listWallets } from './graphql/queries'
+import { listSubmissions, listTransactions, listWallets } from './graphql/queries'
 import { createBounty, createSubmission, createWallet, deleteBounty, updateBounty, updateWallet } from './graphql/mutations'
 import { listBountys, getBounty } from './graphql/extra_mutations'
-import { onCreateSubmission, OnCreateSubmission, onDeleteBounty, onUpdateWallet } from './graphql/subscriptions'
+import { onCreateSubmission, OnCreateSubmission, onCreateTransaction, onDeleteBounty, onUpdateTransaction, onUpdateWallet } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 import Unsplash, { toJson } from 'unsplash-js';
@@ -378,6 +378,74 @@ const UserProfile = () => {
       <span>Welcome back <strong>{name}</strong></span>
       <AmplifySignOut />
       <Wallet/>
+      <Transactions/>
+    </div>
+  )
+}
+
+const Transactions = () => {
+
+  const [transactions, setTransacions] = useState([])
+
+  useEffect(() => {
+    fetchTransactions()
+    watchTransactions()
+  })
+
+  const watchTransactions = async () => {
+    console.log("watch transactions")
+    try {
+      // Subscribe to updates on wallet, TODO, add filter for just user's filter
+      API.graphql(
+        graphqlOperation(onCreateTransaction)
+      ).subscribe({
+        next: (data) => {
+          console.log(data)
+          fetchTransactions()
+        }
+      });
+    } catch (err) {
+      console.log("error watching submissions:", err)
+    }
+  }
+
+  const fetchTransactions = async () => {
+    console.log("fetchTransactions called")
+    try {
+      const currentUser = await Auth.currentUserInfo()
+      const transactionData = await API.graphql(graphqlOperation(listTransactions, {
+        filter:{
+          to: {
+            eq: currentUser.id
+          },
+          from: {
+            eq: currentUser.id
+          }
+        }
+      }))
+
+      const transactions = transactionData.data.listTransactions.items
+      setTransacions(transactions)
+    } catch (err) { console.log('error fetching transactions:', err) }
+  }
+
+  return (
+    <div className="bounty-container">
+      {transactions.map((transaction =>
+        <Transaction 
+          transaction={transaction} 
+          key={transaction.id}/>
+      ))}
+    </div>
+  )
+}
+
+const Transaction = ({transaction}) => {
+  return (
+    <div>
+      from: {transaction.from}
+      to: {transaction.to}
+      amount: {transaction.amount}
     </div>
   )
 }
