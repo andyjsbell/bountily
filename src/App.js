@@ -375,10 +375,11 @@ const UserProfile = () => {
   
   return (
     <div>
-      <span>Welcome back <strong>{name}</strong></span>
-      <AmplifySignOut />
+      <span>{name}</span>
       <Wallet/>
-      <Transactions/>
+      {/* <AmplifySignOut />
+       */}
+      {/* <Transactions/> */}
     </div>
   )
 }
