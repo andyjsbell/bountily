@@ -15,7 +15,7 @@ import { FormTextarea, Modal, ModalBody, ModalHeader } from "shards-react";
 import { Form, FormInput, FormGroupInputGroup,
   InputGroupText,
   InputGroupAddon, FormGroup, InputGroup } from "shards-react";
-
+import { Container, Row, Col } from "shards-react";
 import {
   Card,
   CardHeader,
@@ -392,11 +392,27 @@ const UserProfile = () => {
   })
   
   return (
-    <div className="userpanel-container">
-      <span className="userpanel-item">{name}</span>
-      <Wallet/>
-      <Button onClick={() => signout()}>Signout</Button>
-    </div>
+    <Container className="dr-example-container">
+       <Row>
+          <Col sm="12" md="4" lg="3">
+
+          </Col>
+          <Col sm="12" md="4" lg="6">
+            <h1>Bounti.ly</h1>
+          </Col>
+          <Col sm="12" md="4" lg="3">
+            <div className="userpanel-container">
+              <span className="userpanel-item">{name}</span>
+              <Wallet/>
+              <Button onClick={() => signout()}>Signout</Button>
+            </div>
+          </Col>
+        </Row>
+    </Container>
+    // <div>
+    //   <span></span>
+
+    // </div>
   )
 }
 
@@ -540,8 +556,7 @@ function App() {
   
   return (
     <div className="App">
-      <h1>Bounti.ly</h1>
-      <UserProfile />
+      <UserProfile/>
       <h3>Bounties</h3>
       <Bountys />
       {/* <h3>My submissions</h3>

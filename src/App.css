@@ -48,7 +48,8 @@
   display: flex!important;
   width: 100%!important;
   justify-content: flex-end;
-  align-items: baseline; 
+  align-items: baseline;
+  padding-top: 0.5rem; 
 }
 
 .userpanel-item {
