@@ -404,9 +404,7 @@ const UserProfile = () => {
   return (
     <Container className="dr-example-container">
        <Row>
-          <Col sm="12" md="4" lg="3">
-
-          </Col>
+          <Col sm="12" md="4" lg="3"></Col>
           <Col sm="12" md="4" lg="6">
             <h1>Bounti.ly</h1>
           </Col>
