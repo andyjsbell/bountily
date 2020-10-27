@@ -38,6 +38,8 @@ const unsplash = new Unsplash({
   secret: SECRET_KEY 
 })
 
+const INITIAL_BALANCE = 100.0
+
 const Outcome = Object.freeze({
   "Draft": "DRAFT",
   "Open": "OPEN",
@@ -493,10 +495,10 @@ const Wallet = () => {
           {
             input: {
               user: currentUser.id,
-              balance: 100.0
+              balance: INITIAL_BALANCE
             }
           }))
-          setWallet(100.0)
+          setWallet(INITIAL_BALANCE)
       } else {
         const balance = walletData.data.listWallets?.items[0]?.balance
         setWallet(balance)
