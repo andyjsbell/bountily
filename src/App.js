@@ -381,8 +381,10 @@ const UserProfile = () => {
     }
   }
 
-  const signout = () => {
-
+  const signout = async () => {
+    console.log("signout called")
+    await Auth.signOut()
+    window.location.reload()
   }
 
   useEffect(() => {
@@ -390,13 +392,10 @@ const UserProfile = () => {
   })
   
   return (
-    <div>
-      <span>{name}</span>
+    <div className="userpanel-container">
+      <span className="userpanel-item">{name}</span>
       <Wallet/>
       <Button onClick={() => signout()}>Signout</Button>
-      {/* <AmplifySignOut />
-       */}
-      {/* <Transactions/> */}
     </div>
   )
 }
@@ -521,7 +520,7 @@ const Wallet = () => {
   }
 
   return (
-    <Dropdown open={open} toggle={() => toggle()}>
+    <Dropdown open={open} toggle={() => toggle()} className="userpanel-item">
       <DropdownToggle outline>{BALANCE_TOKEN} {wallet}</DropdownToggle>
       <DropdownMenu>
         {
