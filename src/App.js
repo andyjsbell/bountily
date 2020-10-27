@@ -211,23 +211,49 @@ const Bountys = () => {
     console.log("createBounty called")
 
     try {
+      const amountAsNumber = parseInt(amount)
       const currentUser = await Auth.currentUserInfo()
-      const random = await unsplash.photos.getRandomPhoto()
-      const json = await toJson(random)
-      const url = json.urls.thumb
+      //Check balance
+      const walletData = await API.graphql(graphqlOperation(listWallets, {
+        filter:{
+          user: {
+            eq: currentUser.id
+          }
+        }
+      }))
+
+      const balance = walletData.data.listWallets?.items[0]?.balance
+
+      if (balance >= amountAsNumber) {
+        
+        const random = await unsplash.photos.getRandomPhoto()
+        const json = await toJson(random)
+        const url = json.urls.thumb
       
-      const bounty = {
-        title,
-        deadline: currentDateTimeISO(),
-        amount: parseInt(amount),
-        rules,
-        owner: currentUser.username,
-        outcome: Outcome.Draft,
-        url
+        const bounty = {
+          title,
+          deadline: currentDateTimeISO(),
+          amount: amountAsNumber,
+          rules,
+          owner: currentUser.username,
+          outcome: Outcome.Draft,
+          url
+        }
+    
+        const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
+        const newBalance = balance - amountAsNumber
+        const transaction = {
+          id: walletData.data.listWallets?.items[0].id,
+          balance: newBalance
+        }
+
+        await API.graphql(graphqlOperation(updateWallet, { 
+          input: transaction
+        }));
+        
+        setBountys([...bountys, bountyData.data.createBounty])
       }
 
-      const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
-      setBountys([...bountys, bountyData.data.createBounty])
       //Close modal
       setOpen(false)
     } catch (err) { console.log("error creating bounty:", err) }
@@ -430,7 +456,25 @@ const Wallet = () => {
 
   useEffect(() => {
     fetchWallet()
+    watchWallet()
   }, [])
+
+  const watchWallet = async () => {
+    console.log("watch wallets")
+    try {
+      // Subscribe to updates on wallet, TODO, add filter for just user's filter
+      API.graphql(
+        graphqlOperation(onUpdateWallet)
+      ).subscribe({
+        next: (data) => {
+          console.log(data)
+          fetchWallet()
+        }
+      });
+    } catch (err) {
+      console.log("error watching submissions:", err)
+    }
+  }
 
   const fetchWallet = async () => {
     console.log("fetchWallet called")
@@ -455,8 +499,7 @@ const Wallet = () => {
           setWallet(100.0)
       } else {
         const balance = walletData.data.listWallets?.items[0]?.balance
-        console.log("wallet:", balance)
-        setWallet(1.0)
+        setWallet(balance)
       }
     } catch (err) { console.log('error fetching bountys:', err) }
   }
