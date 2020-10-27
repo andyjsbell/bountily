@@ -517,7 +517,7 @@ function App() {
   
   return (
     <div className="App">
-      <h1>Bountily</h1>
+      <h1>Bounti.ly</h1>
       <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
