@@ -289,7 +289,7 @@ const Bountys = () => {
                   <FormInput placeholder={BALANCE_TOKEN_NAME} type="number" onChange={e => setAmount(e.target.value)}/>
                 </InputGroup> 
                 <InputGroup className="mb-2">
-                  <FormTextarea id="#rules" placeholder="Rules" onChange={e => setRules(e.target.value)}/>
+                  <FormTextarea id="#rules" placeholder="Rules" rows="10" onChange={e => setRules(e.target.value)}/>
                 </InputGroup>
               </FormGroup>
             </Form>
