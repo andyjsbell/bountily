@@ -133,3 +133,72 @@ export const onDeleteSubmission = /* GraphQL */ `
     }
   }
 `;
+export const onCreateWallet = /* GraphQL */ `
+  subscription OnCreateWallet {
+    onCreateWallet {
+      id
+      user
+      balance
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateWallet = /* GraphQL */ `
+  subscription OnUpdateWallet {
+    onUpdateWallet {
+      id
+      user
+      balance
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteWallet = /* GraphQL */ `
+  subscription OnDeleteWallet {
+    onDeleteWallet {
+      id
+      user
+      balance
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onCreateTransaction = /* GraphQL */ `
+  subscription OnCreateTransaction {
+    onCreateTransaction {
+      id
+      from
+      to
+      amount
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateTransaction = /* GraphQL */ `
+  subscription OnUpdateTransaction {
+    onUpdateTransaction {
+      id
+      from
+      to
+      amount
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteTransaction = /* GraphQL */ `
+  subscription OnDeleteTransaction {
+    onDeleteTransaction {
+      id
+      from
+      to
+      amount
+      createdAt
+      updatedAt
+    }
+  }
+`;

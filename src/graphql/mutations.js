@@ -151,3 +151,90 @@ export const deleteSubmission = /* GraphQL */ `
     }
   }
 `;
+export const createWallet = /* GraphQL */ `
+  mutation CreateWallet(
+    $input: CreateWalletInput!
+    $condition: ModelWalletConditionInput
+  ) {
+    createWallet(input: $input, condition: $condition) {
+      id
+      user
+      balance
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateWallet = /* GraphQL */ `
+  mutation UpdateWallet(
+    $input: UpdateWalletInput!
+    $condition: ModelWalletConditionInput
+  ) {
+    updateWallet(input: $input, condition: $condition) {
+      id
+      user
+      balance
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteWallet = /* GraphQL */ `
+  mutation DeleteWallet(
+    $input: DeleteWalletInput!
+    $condition: ModelWalletConditionInput
+  ) {
+    deleteWallet(input: $input, condition: $condition) {
+      id
+      user
+      balance
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createTransaction = /* GraphQL */ `
+  mutation CreateTransaction(
+    $input: CreateTransactionInput!
+    $condition: ModelTransactionConditionInput
+  ) {
+    createTransaction(input: $input, condition: $condition) {
+      id
+      from
+      to
+      amount
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateTransaction = /* GraphQL */ `
+  mutation UpdateTransaction(
+    $input: UpdateTransactionInput!
+    $condition: ModelTransactionConditionInput
+  ) {
+    updateTransaction(input: $input, condition: $condition) {
+      id
+      from
+      to
+      amount
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteTransaction = /* GraphQL */ `
+  mutation DeleteTransaction(
+    $input: DeleteTransactionInput!
+    $condition: ModelTransactionConditionInput
+  ) {
+    deleteTransaction(input: $input, condition: $condition) {
+      id
+      from
+      to
+      amount
+      createdAt
+      updatedAt
+    }
+  }
+`;

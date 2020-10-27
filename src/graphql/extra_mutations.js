@@ -48,3 +48,12 @@ export const getBounty = /* GraphQL */ `
     }
   }
 `;
+
+export const getWallet = /* GraphQL */ `
+  query GetWallet($user: ID!) {
+    getWallet(user: $user) {
+      balance
+    }
+  }
+`;
+

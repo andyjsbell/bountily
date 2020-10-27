@@ -6,7 +6,7 @@ import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
 import { createBounty, createSubmission } from './graphql/mutations'
 import { listSubmissions } from './graphql/queries'
-import { listBountys, getBounty } from './graphql/extra_mutations'
+import { listBountys, getBounty, getWallet } from './graphql/extra_mutations'
 import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
@@ -62,8 +62,6 @@ const Bounty = ({bountyId}) => {
       try {
       const bountyData = await API.graphql(graphqlOperation(getBounty, { id: bountyId }))
       setBounty(bountyData.data.getBounty)
-
-      console.log(bountyData)
     } catch (err) {
       console.log("error getting bountyId:", err)
     }
@@ -304,6 +302,31 @@ const UserProfile = () => {
     </div>
   )
 }
+
+const Wallet = () => {
+  
+  const [wallet, setWallet] = useState(0.0)
+
+  useEffect(() => {
+    fetchWallet()
+  }, [])
+
+  const fetchWallet = async () => {
+    console.log("fetchWallet called")
+    try {
+      const currentUser = await Auth.currentUserInfo()
+      console.log(currentUser.id)
+      const walletData = await API.graphql(graphqlOperation(getWallet, { user: currentUser.id }))
+      const wallet = walletData.data
+      console.log("wallet:", wallet)
+      setWallet(1.0)
+    } catch (err) { console.log('error fetching bountys:', err) }
+  }
+
+  return (
+    <span>Wallet: {wallet}</span>
+  )
+}
 function App() {
   
   return (
@@ -312,6 +335,7 @@ function App() {
       <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
+      <Wallet/>
       {/* <h3>My submissions</h3>
       <Submissions /> */}
     </div>
