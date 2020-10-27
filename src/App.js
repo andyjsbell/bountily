@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react'
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
 import { createBounty, createSubmission } from './graphql/mutations'
-import { listSubmissions } from './graphql/queries'
-import { listBountys, getBounty, getWallet } from './graphql/extra_mutations'
+import { listSubmissions, listWallets } from './graphql/queries'
+import { listBountys, getBounty } from './graphql/extra_mutations'
 import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
@@ -316,9 +316,15 @@ const Wallet = () => {
     try {
       const currentUser = await Auth.currentUserInfo()
       console.log(currentUser.id)
-      const walletData = await API.graphql(graphqlOperation(getWallet, { user: currentUser.id }))
-      const wallet = walletData.data
-      console.log("wallet:", wallet)
+      const walletData = await API.graphql(graphqlOperation(listWallets, {
+        filter:{
+          user: {
+            eq: currentUser.id
+          }
+        }
+      }))
+      const balance = walletData.data.listWallets?.items[0]?.balance
+      console.log("wallet:", balance)
       setWallet(1.0)
     } catch (err) { console.log('error fetching bountys:', err) }
   }
@@ -331,10 +337,10 @@ function App() {
   
   return (
     <div className="App">
-      <h1>Bountily</h1>
+      {/* <h1>Bountily</h1>
       <UserProfile />
       <h3>Bounties</h3>
-      <Bountys />
+      <Bountys /> */}
       <Wallet/>
       {/* <h3>My submissions</h3>
       <Submissions /> */}
