@@ -38,6 +38,10 @@ const unsplash = new Unsplash({
   secret: SECRET_KEY 
 })
 
+const INITIAL_BALANCE = 100.0
+const BALANCE_TOKEN = "BTY"
+const BALANCE_TOKEN_NAME = "Boooty"
+
 const Outcome = Object.freeze({
   "Draft": "DRAFT",
   "Open": "OPEN",
@@ -137,7 +141,7 @@ const Bounty = ({bountyId}) => {
   return (
     <div className="bounty-item">
       <Card style={{ maxWidth: "300px"  }}>
-        <CardHeader>${bounty?.amount} #{bounty?.submissions?.items?.length}</CardHeader>
+        <CardHeader>{BALANCE_TOKEN}&nbsp;{bounty?.amount} #{bounty?.submissions?.items?.length}</CardHeader>
         <CardImg src={bounty?.url} />
         <CardBody>
           <CardTitle>{bounty?.title}</CardTitle>
@@ -273,9 +277,9 @@ const Bountys = () => {
                 </InputGroup>
                 <InputGroup className="mb-2">
                   <InputGroupAddon type="prepend">
-                    <InputGroupText>$</InputGroupText>
+                    <InputGroupText>{BALANCE_TOKEN}</InputGroupText>
                   </InputGroupAddon>
-                  <FormInput placeholder="Amount" type="number" onChange={e => setAmount(e.target.value)}/>
+                  <FormInput placeholder={BALANCE_TOKEN_NAME} type="number" onChange={e => setAmount(e.target.value)}/>
                 </InputGroup> 
                 <InputGroup className="mb-2">
                   <FormTextarea id="#rules" placeholder="Rules" onChange={e => setRules(e.target.value)}/>
@@ -493,10 +497,10 @@ const Wallet = () => {
           {
             input: {
               user: currentUser.id,
-              balance: 100.0
+              balance: INITIAL_BALANCE
             }
           }))
-          setWallet(100.0)
+          setWallet(INITIAL_BALANCE)
       } else {
         const balance = walletData.data.listWallets?.items[0]?.balance
         setWallet(balance)
@@ -505,7 +509,7 @@ const Wallet = () => {
   }
 
   return (
-    <span>Wallet: {wallet}</span>
+    <span>Wallet: {BALANCE_TOKEN} {wallet}</span>
   )
 }
 function App() {
