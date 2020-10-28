@@ -43,6 +43,19 @@
   margin: 1.5em;
 }
 
+.userpanel-container {
+  flex-wrap: wrap!important;
+  display: flex!important;
+  width: 100%!important;
+  justify-content: flex-end;
+  align-items: baseline;
+  padding-top: 0.5rem; 
+}
+
+.userpanel-item {
+  padding-right: 0.5rem!important;
+}
+
 .bounty-container {
   flex-wrap: wrap!important;
   display: flex!important;
