@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 
 import React, { useEffect, useState } from 'react'
@@ -7,16 +6,21 @@ import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 import { createBounty, createSubmission } from './graphql/mutations'
 import { listSubmissions } from './graphql/queries'
 import { listBountys, getBounty, getWallet } from './graphql/extra_mutations'
-import { onCreateSubmission, OnCreateSubmission } from './graphql/subscriptions'
+import { onCreateSubmission } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 import Unsplash, { toJson } from 'unsplash-js';
-import { FormTextarea, Modal, ModalBody, ModalHeader } from "shards-react";
-import { Form, FormInput, FormGroupInputGroup,
-  InputGroupText,
-  InputGroupAddon, FormGroup, InputGroup } from "shards-react";
-
 import {
+  FormTextarea,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  Form,
+  FormInput,
+  InputGroupText,
+  InputGroupAddon,
+  FormGroup,
+  InputGroup,
   Card,
   CardHeader,
   CardTitle,
@@ -24,7 +28,7 @@ import {
   CardBody,
   CardFooter,
   Button
-} from "shards-react"
+} from "shards-react";
 
 import "bootstrap/dist/css/bootstrap.min.css"
 import "shards-ui/dist/css/shards.min.css"
@@ -68,6 +72,8 @@ const Bounty = ({bountyId}) => {
   }
   useEffect(() => {
     load(bountyId)
+        .then(_ => console.log("loaded bounty"))
+        .catch(e => console.error("error loading bounty: " + e))
   }, [])
 
   const addSubmission = async (bountyID) => {
@@ -84,7 +90,7 @@ const Bounty = ({bountyId}) => {
       //Close modal
       setOpen(false)
       // reload our bounty
-      load(bountyID)
+      await load(bountyID)
       //TODO we want to subscribe to bounty to watch for changes to update 
     } catch (err) {
       console.log("error creating submission:", err)
@@ -123,14 +129,16 @@ const Bounty = ({bountyId}) => {
 
 const Bountys = () => {
 
-  const [bountys, setBountys] = useState([])
+  const [bounties, setBounties] = useState([])
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [rules, setRules] = useState('')
   const [amount, setAmount] = useState('')
 
   useEffect(() => {
-    fetchBountys()
+    fetchBounties()
+        .then(_ => console.log("fetched bounties"))
+        .catch(e => console.error("error fetching bounties"))
   }, [])
 
   
@@ -138,12 +146,12 @@ const Bountys = () => {
     setOpen(!open)
   }
   
-  const fetchBountys = async () => {
-    console.log("fetchBountys called")
+  const fetchBounties = async () => {
+    console.log("fetchBounties called")
     try {
       const bountyData = await API.graphql(graphqlOperation(listBountys))
-      const bountys = bountyData.data.listBountys.items
-      setBountys(bountys)
+      const bounties = bountyData.data.listBountys.items
+      setBounties(bounties)
     } catch (err) { console.log('error fetching bountys:', err) }
   }
 
@@ -167,7 +175,7 @@ const Bountys = () => {
       }
 
       const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
-      setBountys([...bountys, bountyData.data.createBounty])
+      setBounties([...bounties, bountyData.data.createBounty])
       //Close modal
       setOpen(false)
     } catch (err) { console.log("error creating bounty:", err) }
@@ -212,7 +220,7 @@ const Bountys = () => {
         </Modal>
       </div>
       <div className="bounty-container">
-          {bountys.map((bounty =>
+          {bounties.map((bounty =>
             <Bounty bountyId={bounty.id}/>
           ))}
       </div>
@@ -293,6 +301,8 @@ const UserProfile = () => {
   }
   useEffect(() => {
     load()
+        .then(_ => console.log("loaded user profile"))
+        .catch(e => console.error("error loading user profile"))
   })
   
   return (
@@ -309,6 +319,8 @@ const Wallet = () => {
 
   useEffect(() => {
     fetchWallet()
+        .then(_ => console.log("fetched wallet"))
+        .catch(e => console.error("error fetching wallet"))
   }, [])
 
   const fetchWallet = async () => {
@@ -331,7 +343,7 @@ function App() {
   
   return (
     <div className="App">
-      <h1>Bountily</h1>
+      <h1>Bountly</h1>
       <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
