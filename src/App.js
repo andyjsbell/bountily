@@ -6,14 +6,10 @@ import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 import { listSubmissions, listTransactions, listWallets } from './graphql/queries'
 import { createBounty, createSubmission, createWallet, deleteBounty, updateBounty, updateWallet } from './graphql/mutations'
 import { listBountys, getBounty } from './graphql/extra_mutations'
-import { onCreateSubmission, OnCreateSubmission, onCreateTransaction, onDeleteBounty, onUpdateTransaction, onUpdateWallet } from './graphql/subscriptions'
+import { onCreateSubmission, onCreateTransaction, onDeleteBounty, onUpdateTransaction, onUpdateWallet } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 import Unsplash, { toJson } from 'unsplash-js';
-import { FormTextarea, Modal, ModalBody, ModalHeader } from "shards-react";
-import { Form, FormInput, FormGroupInputGroup,
-  InputGroupText,
-  InputGroupAddon, FormGroup, InputGroup } from "shards-react";
 import { Container, Row, Col } from "shards-react";
 
 import {
@@ -223,7 +219,7 @@ const Bountys = () => {
         graphqlOperation(onDeleteBounty)
       ).subscribe({
         next: (data) => { 
-          fetchBountys()
+          fetchBounties()
         }
       });
     } catch (err) {
@@ -275,11 +271,8 @@ const Bountys = () => {
           input: transaction
         }));
         
-        setBountys([...bountys, bountyData.data.createBounty])
+        setBounties([...bounties, bountyData.data.createBounty])
       }
-
-      const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
-      setBounties([...bounties, bountyData.data.createBounty])
 
       //Close modal
       setOpen(false)
@@ -416,7 +409,7 @@ const UserProfile = () => {
 
           </Col>
           <Col sm="12" md="4" lg="6">
-            <h1>Bounti.ly</h1>
+            <h1>Bountly</h1>
           </Col>
           <Col sm="12" md="4" lg="3">
             <div className="userpanel-container">
@@ -576,7 +569,6 @@ function App() {
   
   return (
     <div className="App">
-      <h1>Bountly</h1>
       <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
