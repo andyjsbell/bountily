@@ -32,6 +32,7 @@ export const Bounties = () => {
     const [title, setTitle] = useState('')
     const [rules, setRules] = useState('')
     const [amount, setAmount] = useState('')
+    const [invalid, setInvalid] = useState({})
 
     useEffect(() => {
         fetchBounties()
@@ -71,25 +72,35 @@ export const Bounties = () => {
         }
     }
 
-    const addBounty = async () => {
-        console.log("createBounty called")
-
+    const wallet = async () => {
         try {
-            const amountAsNumber = parseInt(amount)
-            const currentUser = await Auth.currentUserInfo()
-            //Check balance
+            const userId = (await Auth.currentUserInfo()).id
             const walletData = await API.graphql(graphqlOperation(listWallets, {
-                filter:{
+                filter: {
                     user: {
-                        eq: currentUser.id
+                        eq: userId
                     }
                 }
             }))
 
-            const balance = walletData.data.listWallets?.items[0]?.balance
+            return walletData.data.listWallets?.items[0]
+        } catch (e) {
+            console.error("error listing wallets:", e)
+        }
+        return 0
+    }
+
+    const balanceOfWallet = async () => {
+        return (await wallet()).balance
+    }
+
+    const addBounty = async () => {
+        console.log("createBounty called")
+        try {
+            const amountAsNumber = parseInt(amount)
+            const balance = await balanceOfWallet()
 
             if (balance >= amountAsNumber) {
-
                 const random = await unsplash.photos.getRandomPhoto()
                 const json = await toJson(random)
                 const url = json.urls.thumb
@@ -99,7 +110,7 @@ export const Bounties = () => {
                     deadline: currentDateTimeISO(),
                     amount: amountAsNumber,
                     rules,
-                    owner: currentUser.username,
+                    owner: await Auth.currentUserInfo().username,
                     outcome: Outcome.Draft,
                     url
                 }
@@ -107,7 +118,7 @@ export const Bounties = () => {
                 const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
                 const newBalance = balance - amountAsNumber
                 const transaction = {
-                    id: walletData.data.listWallets?.items[0].id,
+                    id: wallet().id,
                     balance: newBalance
                 }
 
@@ -123,6 +134,51 @@ export const Bounties = () => {
         } catch (err) { console.error("error creating bounty:", err) }
     }
 
+    const checkAmount = async (val) => {
+        const balance = await balanceOfWallet()
+        let valid = (parseInt(val) <= balance)
+
+        if (valid) {
+            setAmount(amount)
+            setInvalid({
+                'amount' : {
+                    invalid: false,
+                    valid: true
+                }
+            })
+
+        } else {
+            setInvalid({
+                'amount' : {
+                    invalid: true,
+                    valid: false
+                }
+            })
+        }
+    }
+
+    const checkTitle = async (val) => {
+        let valid = val?.length > 3
+
+        if (valid) {
+            setTitle(val)
+            setInvalid({
+                'title' : {
+                    invalid: false,
+                    valid: true
+                }
+            })
+
+        } else {
+            setInvalid({
+                'title' : {
+                    invalid: true,
+                    valid: false
+                }
+            })
+        }
+    }
+
     return (
         <div>
             <div className="bounty-control">
@@ -133,13 +189,13 @@ export const Bounties = () => {
                         <Form>
                             <FormGroup>
                                 <InputGroup className="mb-2">
-                                    <FormInput placeholder="Title" onChange={e => setTitle(e.target.value)}/>
+                                    <FormInput {...invalid['title']} placeholder="Title" onChange={e => checkTitle(e.target.value)}/>
                                 </InputGroup>
                                 <InputGroup className="mb-2">
                                     <InputGroupAddon type="prepend">
                                         <InputGroupText>{BALANCE_TOKEN}</InputGroupText>
                                     </InputGroupAddon>
-                                    <FormInput placeholder={BALANCE_TOKEN_NAME} type="number" onChange={e => setAmount(e.target.value)}/>
+                                    <FormInput {...invalid['amount']} placeholder={BALANCE_TOKEN_NAME} type="number" onChange={e => checkAmount(e.target.value)}/>
                                 </InputGroup>
                                 <InputGroup className="mb-2">
                                     <FormTextarea id="#rules" placeholder="Rules" onChange={e => setRules(e.target.value)}/>
