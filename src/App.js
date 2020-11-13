@@ -3,13 +3,19 @@ import './App.css';
 import React, { useEffect, useState } from 'react'
 import Amplify, { API, graphqlOperation, Auth } from 'aws-amplify'
 
-import { createBounty, createSubmission } from './graphql/mutations'
-import { listSubmissions } from './graphql/queries'
-import { listBountys, getBounty, getWallet } from './graphql/extra_mutations'
-import { onCreateSubmission } from './graphql/subscriptions'
+import { listSubmissions, listTransactions, listWallets } from './graphql/queries'
+import { createBounty, createSubmission, createWallet, deleteBounty, updateBounty, updateWallet } from './graphql/mutations'
+import { listBountys, getBounty } from './graphql/extra_mutations'
+import { onCreateSubmission, OnCreateSubmission, onCreateTransaction, onDeleteBounty, onUpdateTransaction, onUpdateWallet } from './graphql/subscriptions'
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
 import awsExports from "./aws-exports";
 import Unsplash, { toJson } from 'unsplash-js';
+import { FormTextarea, Modal, ModalBody, ModalHeader } from "shards-react";
+import { Form, FormInput, FormGroupInputGroup,
+  InputGroupText,
+  InputGroupAddon, FormGroup, InputGroup } from "shards-react";
+import { Container, Row, Col } from "shards-react";
+
 import {
   FormTextarea,
   Modal,
@@ -30,6 +36,13 @@ import {
   Button
 } from "shards-react";
 
+import {
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem
+} from "shards-react";
+
 import "bootstrap/dist/css/bootstrap.min.css"
 import "shards-ui/dist/css/shards.min.css"
 
@@ -41,6 +54,10 @@ const unsplash = new Unsplash({
   accessKey: APP_ACCESS_KEY, 
   secret: SECRET_KEY 
 })
+
+const INITIAL_BALANCE = 100.0
+const BALANCE_TOKEN = "BTY"
+const BALANCE_TOKEN_NAME = "Boooty"
 
 const Outcome = Object.freeze({
   "Draft": "DRAFT",
@@ -55,6 +72,45 @@ const currentDateTimeISO = () => {
 
 const formatDateTime = (isoDate) => {
   return new Date(isoDate).toLocaleString()
+}
+
+const CancelBounty = ({bountyId, bountyName}) => {
+  const [open, setOpen] = useState(false)
+
+  const toggle = () => {
+    setOpen(!open)
+  }
+
+  const cancelBounty = async (bountyID) => {
+    console.log("cancelBounty called")
+    try {
+      await API.graphql(graphqlOperation(deleteBounty, {
+        input: {
+          id: bountyID
+        }
+      }))
+    } catch (err) {
+      console.log("error canceling bounty:", err)
+    }
+
+    setOpen(false)
+  }
+
+  return (
+    <div>
+      <Button onClick={() => toggle()}>Cancel</Button>
+      <Modal open={open} toggle={toggle}>
+        <ModalHeader><strong>Cancel Bounty {bountyName}</strong></ModalHeader>
+        <ModalBody>
+          <div>Are you sure you want to cancel the bounty?</div> 
+          <div>
+            <Button className="button-modal" onClick={() => cancelBounty(bountyId)}>Go for it!</Button>
+            <Button className="button-modal" theme="secondary" onClick={()=> toggle()}>Cancel</Button>
+          </div>
+        </ModalBody>
+      </Modal>
+    </div>
+  )
 }
 
 const Bounty = ({bountyId}) => {
@@ -104,12 +160,15 @@ const Bounty = ({bountyId}) => {
   return (
     <div className="bounty-item">
       <Card style={{ maxWidth: "300px"  }}>
-        <CardHeader>${bounty?.amount} #{bounty?.submissions?.items?.length}</CardHeader>
+        <CardHeader>{BALANCE_TOKEN}&nbsp;{bounty?.amount} #{bounty?.submissions?.items?.length}</CardHeader>
         <CardImg src={bounty?.url} />
         <CardBody>
           <CardTitle>{bounty?.title}</CardTitle>
           <p>{bounty?.rules.substring(0,20) + '...'}</p>
           <Button onClick={() => toggle()}>More info &rarr;</Button>
+          <CancelBounty
+            bountyId={bounty?.id}
+            bountyName={bounty?.title}/>
           <Modal open={open} toggle={toggle}>
             <ModalHeader><strong>{bounty?.title}</strong></ModalHeader>
             <ModalBody>
@@ -139,6 +198,7 @@ const Bountys = () => {
     fetchBounties()
         .then(_ => console.log("fetched bounties"))
         .catch(e => console.error("error fetching bounties"))
+    watchBountys()
   }, [])
 
   
@@ -155,38 +215,75 @@ const Bountys = () => {
     } catch (err) { console.log('error fetching bountys:', err) }
   }
 
+  const watchBountys = async () => {
+    console.log("watch bountys")
+    try {
+      // Subscribe to creation of submission
+      API.graphql(
+        graphqlOperation(onDeleteBounty)
+      ).subscribe({
+        next: (data) => { 
+          fetchBountys()
+        }
+      });
+    } catch (err) {
+      console.log("error watching submissions:", err)
+    }
+  }
+
   const addBounty = async () => {
     console.log("createBounty called")
 
     try {
+      const amountAsNumber = parseInt(amount)
       const currentUser = await Auth.currentUserInfo()
-      const random = await unsplash.photos.getRandomPhoto()
-      const json = await toJson(random)
-      const url = json.urls.thumb
+      //Check balance
+      const walletData = await API.graphql(graphqlOperation(listWallets, {
+        filter:{
+          user: {
+            eq: currentUser.id
+          }
+        }
+      }))
+
+      const balance = walletData.data.listWallets?.items[0]?.balance
+
+      if (balance >= amountAsNumber) {
+        
+        const random = await unsplash.photos.getRandomPhoto()
+        const json = await toJson(random)
+        const url = json.urls.thumb
       
-      const bounty = {
-        title,
-        deadline: currentDateTimeISO(),
-        amount: parseInt(amount),
-        rules,
-        owner: currentUser.username,
-        outcome: Outcome.Draft,
-        url
+        const bounty = {
+          title,
+          deadline: currentDateTimeISO(),
+          amount: amountAsNumber,
+          rules,
+          owner: currentUser.username,
+          outcome: Outcome.Draft,
+          url
+        }
+    
+        const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
+        const newBalance = balance - amountAsNumber
+        const transaction = {
+          id: walletData.data.listWallets?.items[0].id,
+          balance: newBalance
+        }
+
+        await API.graphql(graphqlOperation(updateWallet, { 
+          input: transaction
+        }));
+        
+        setBountys([...bountys, bountyData.data.createBounty])
       }
 
       const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
       setBounties([...bounties, bountyData.data.createBounty])
+
       //Close modal
       setOpen(false)
     } catch (err) { console.log("error creating bounty:", err) }
-  }
-
-  const updateBounty = async () => {
-
-  }
-
-  const cancelBounty = async () => {
-
   }
 
   return (
@@ -203,9 +300,9 @@ const Bountys = () => {
                 </InputGroup>
                 <InputGroup className="mb-2">
                   <InputGroupAddon type="prepend">
-                    <InputGroupText>$</InputGroupText>
+                    <InputGroupText>{BALANCE_TOKEN}</InputGroupText>
                   </InputGroupAddon>
-                  <FormInput placeholder="Amount" type="number" onChange={e => setAmount(e.target.value)}/>
+                  <FormInput placeholder={BALANCE_TOKEN_NAME} type="number" onChange={e => setAmount(e.target.value)}/>
                 </InputGroup> 
                 <InputGroup className="mb-2">
                   <FormTextarea id="#rules" placeholder="Rules" onChange={e => setRules(e.target.value)}/>
@@ -299,6 +396,13 @@ const UserProfile = () => {
       console.log("failed to load user info:", err)
     }
   }
+
+  const signout = async () => {
+    console.log("signout called")
+    await Auth.signOut()
+    window.location.reload()
+  }
+
   useEffect(() => {
     load()
         .then(_ => console.log("loaded user profile"))
@@ -306,9 +410,85 @@ const UserProfile = () => {
   })
   
   return (
+    <Container className="dr-example-container">
+       <Row>
+          <Col sm="12" md="4" lg="3">
+
+          </Col>
+          <Col sm="12" md="4" lg="6">
+            <h1>Bounti.ly</h1>
+          </Col>
+          <Col sm="12" md="4" lg="3">
+            <div className="userpanel-container">
+              <span className="userpanel-item">{name}</span>
+              <Wallet/>
+              <Button onClick={() => signout()}>Signout</Button>
+            </div>
+          </Col>
+        </Row>
+    </Container>
+    // <div>
+    //   <span></span>
+
+    // </div>
+  )
+}
+
+const useTransactions = () => {
+
+  const [transactions, setTransacions] = useState([])
+
+  useEffect(() => {
+    fetchTransactions()
+    watchTransactions()
+  })
+
+  const watchTransactions = async () => {
+    console.log("watch transactions")
+    try {
+      // Subscribe to updates on wallet, TODO, add filter for just user's filter
+      API.graphql(
+        graphqlOperation(onCreateTransaction)
+      ).subscribe({
+        next: (data) => {
+          console.log(data)
+          fetchTransactions()
+        }
+      });
+    } catch (err) {
+      console.log("error watching submissions:", err)
+    }
+  }
+
+  const fetchTransactions = async () => {
+    console.log("fetchTransactions called")
+    try {
+      const currentUser = await Auth.currentUserInfo()
+      const transactionData = await API.graphql(graphqlOperation(listTransactions, {
+        filter:{
+          to: {
+            eq: currentUser.id
+          },
+          from: {
+            eq: currentUser.id
+          }
+        }
+      }))
+
+      const transactions = transactionData.data.listTransactions.items
+      setTransacions(transactions)
+    } catch (err) { console.log('error fetching transactions:', err) }
+  }
+
+  return transactions
+}
+
+const Transaction = ({transaction}) => {
+  return (
     <div>
-      <span>Welcome back <strong>{name}</strong></span>
-      <AmplifySignOut />
+      from: {transaction.from}
+      to: {transaction.to}
+      amount: {transaction.amount}
     </div>
   )
 }
@@ -316,29 +496,82 @@ const UserProfile = () => {
 const Wallet = () => {
   
   const [wallet, setWallet] = useState(0.0)
+  const [open, setOpen] = useState(false)
+  const transactions = useTransactions();
+
+  const toggle = () => {
+    setOpen(!open)
+  }
 
   useEffect(() => {
     fetchWallet()
         .then(_ => console.log("fetched wallet"))
         .catch(e => console.error("error fetching wallet"))
+    watchWallet()
   }, [])
+
+  const watchWallet = async () => {
+    console.log("watch wallets")
+    try {
+      // Subscribe to updates on wallet, TODO, add filter for just user's filter
+      API.graphql(
+        graphqlOperation(onUpdateWallet)
+      ).subscribe({
+        next: (data) => {
+          console.log(data)
+          fetchWallet()
+        }
+      });
+    } catch (err) {
+      console.log("error watching submissions:", err)
+    }
+  }
 
   const fetchWallet = async () => {
     console.log("fetchWallet called")
     try {
       const currentUser = await Auth.currentUserInfo()
-      console.log(currentUser.id)
-      const walletData = await API.graphql(graphqlOperation(getWallet, { user: currentUser.id }))
-      const wallet = walletData.data
-      console.log("wallet:", wallet)
-      setWallet(1.0)
+      const walletData = await API.graphql(graphqlOperation(listWallets, {
+        filter:{
+          user: {
+            eq: currentUser.id
+          }
+        }
+      }))
+
+      if (walletData.data.listWallets?.items.length === 0) {
+        await API.graphql(graphqlOperation(createWallet, 
+          {
+            input: {
+              user: currentUser.id,
+              balance: INITIAL_BALANCE
+            }
+          }))
+          setWallet(INITIAL_BALANCE)
+      } else {
+        const balance = walletData.data.listWallets?.items[0]?.balance
+        setWallet(balance)
+      }
     } catch (err) { console.log('error fetching bountys:', err) }
   }
 
   return (
-    <span>Wallet: {wallet}</span>
+    <Dropdown open={open} toggle={() => toggle()} className="userpanel-item">
+      <DropdownToggle outline>{BALANCE_TOKEN} {wallet}</DropdownToggle>
+      <DropdownMenu>
+        {
+        transactions?.length === 0 ?
+          <DropdownItem>No transactions</DropdownItem>
+          :
+          transactions.map((transaction =>
+            <DropdownItem>{BALANCE_TOKEN} {transaction.amount}</DropdownItem>
+          ))
+        }
+      </DropdownMenu>
+    </Dropdown>
   )
 }
+
 function App() {
   
   return (
@@ -347,7 +580,6 @@ function App() {
       <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
-      <Wallet/>
       {/* <h3>My submissions</h3>
       <Submissions /> */}
     </div>

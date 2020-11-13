@@ -18,6 +18,7 @@ type Bounty @model {
 }
 
 type Submission @model @key(name: "bySubmission", fields:["bountyID"]){
+  id: ID!
   bountyID: ID!
   bounty: Bounty @connection(fields: ["bountyID"])
   owner: ID!
@@ -26,11 +27,13 @@ type Submission @model @key(name: "bySubmission", fields:["bountyID"]){
 }
 
 type Wallet @model {
+  id: ID!
   user: ID!
   balance: Float!
 }
 
 type Transaction @model {
+  id: ID!
   from: ID!
   to: ID!
   amount: Float!
