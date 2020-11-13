@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 
 import React, { useEffect, useState } from 'react'
@@ -16,7 +15,18 @@ import { Form, FormInput, FormGroupInputGroup,
   InputGroupText,
   InputGroupAddon, FormGroup, InputGroup } from "shards-react";
 import { Container, Row, Col } from "shards-react";
+
 import {
+  FormTextarea,
+  Modal,
+  ModalBody,
+  ModalHeader,
+  Form,
+  FormInput,
+  InputGroupText,
+  InputGroupAddon,
+  FormGroup,
+  InputGroup,
   Card,
   CardHeader,
   CardTitle,
@@ -24,7 +34,7 @@ import {
   CardBody,
   CardFooter,
   Button
-} from "shards-react"
+} from "shards-react";
 
 import {
   Dropdown,
@@ -118,6 +128,8 @@ const Bounty = ({bountyId}) => {
   }
   useEffect(() => {
     load(bountyId)
+        .then(_ => console.log("loaded bounty"))
+        .catch(e => console.error("error loading bounty: " + e))
   }, [])
 
   const addSubmission = async (bountyID) => {
@@ -134,7 +146,7 @@ const Bounty = ({bountyId}) => {
       //Close modal
       setOpen(false)
       // reload our bounty
-      load(bountyID)
+      await load(bountyID)
       //TODO we want to subscribe to bounty to watch for changes to update 
     } catch (err) {
       console.log("error creating submission:", err)
@@ -176,14 +188,16 @@ const Bounty = ({bountyId}) => {
 
 const Bountys = () => {
 
-  const [bountys, setBountys] = useState([])
+  const [bounties, setBounties] = useState([])
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [rules, setRules] = useState('')
   const [amount, setAmount] = useState('')
 
   useEffect(() => {
-    fetchBountys()
+    fetchBounties()
+        .then(_ => console.log("fetched bounties"))
+        .catch(e => console.error("error fetching bounties"))
     watchBountys()
   }, [])
 
@@ -192,13 +206,12 @@ const Bountys = () => {
     setOpen(!open)
   }
   
-  const fetchBountys = async () => {
-    console.log("fetchBountys called")
+  const fetchBounties = async () => {
+    console.log("fetchBounties called")
     try {
       const bountyData = await API.graphql(graphqlOperation(listBountys))
-      const bountys = bountyData.data.listBountys.items
-      setBountys(bountys)
-      console.log("bountys:", bountys)
+      const bounties = bountyData.data.listBountys.items
+      setBounties(bounties)
     } catch (err) { console.log('error fetching bountys:', err) }
   }
 
@@ -265,6 +278,9 @@ const Bountys = () => {
         setBountys([...bountys, bountyData.data.createBounty])
       }
 
+      const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
+      setBounties([...bounties, bountyData.data.createBounty])
+
       //Close modal
       setOpen(false)
     } catch (err) { console.log("error creating bounty:", err) }
@@ -301,8 +317,8 @@ const Bountys = () => {
         </Modal>
       </div>
       <div className="bounty-container">
-          {bountys.map((bounty =>
-            <Bounty bountyId={bounty.id} key={bounty.id}/>
+          {bounties.map((bounty =>
+            <Bounty bountyId={bounty.id}/>
           ))}
       </div>
     </div>
@@ -389,6 +405,8 @@ const UserProfile = () => {
 
   useEffect(() => {
     load()
+        .then(_ => console.log("loaded user profile"))
+        .catch(e => console.error("error loading user profile"))
   })
   
   return (
@@ -487,6 +505,8 @@ const Wallet = () => {
 
   useEffect(() => {
     fetchWallet()
+        .then(_ => console.log("fetched wallet"))
+        .catch(e => console.error("error fetching wallet"))
     watchWallet()
   }, [])
 
@@ -556,7 +576,8 @@ function App() {
   
   return (
     <div className="App">
-      <UserProfile/>
+      <h1>Bountly</h1>
+      <UserProfile />
       <h3>Bounties</h3>
       <Bountys />
       {/* <h3>My submissions</h3>
