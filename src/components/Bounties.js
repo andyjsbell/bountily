@@ -97,6 +97,7 @@ export const Bounties = () => {
     const addBounty = async () => {
         console.log("createBounty called")
         try {
+            console.log(`amount to be charged: ${amount}`)
             const amountAsNumber = parseInt(amount)
             const balance = await balanceOfWallet()
 
@@ -110,15 +111,16 @@ export const Bounties = () => {
                     deadline: currentDateTimeISO(),
                     amount: amountAsNumber,
                     rules,
-                    owner: await Auth.currentUserInfo().username,
+                    owner: (await Auth.currentUserInfo()).username,
                     outcome: Outcome.Draft,
                     url
                 }
 
+                // TODO this needs to be atomic for both creating bounty and adjusting wallet
                 const bountyData = await API.graphql(graphqlOperation(createBounty, { input: bounty }))
                 const newBalance = balance - amountAsNumber
                 const transaction = {
-                    id: wallet().id,
+                    id: (await wallet()).id,
                     balance: newBalance
                 }
 
@@ -127,6 +129,9 @@ export const Bounties = () => {
                 }));
 
                 setBounties([...bounties, bountyData.data.createBounty])
+            } else {
+                console.log(`balance:${balance} amountAsNumber:${amountAsNumber}`)
+                // TODO show error message
             }
 
             //Close modal
@@ -139,7 +144,7 @@ export const Bounties = () => {
         let valid = (parseInt(val) <= balance)
 
         if (valid) {
-            setAmount(amount)
+            setAmount(val)
             setInvalid({
                 'amount' : {
                     invalid: false,
