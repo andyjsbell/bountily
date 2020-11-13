@@ -13,7 +13,7 @@ export const useTransactions = () => {
         watchTransactions()
             .then(_ => console.log("watching transactions"))
             .catch(e => console.error("error watching transactions:", e))
-    })
+    }, [])
 
     const watchTransactions = async () => {
         console.log("watch transactions")
